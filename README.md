@@ -1,6 +1,5 @@
-# KTbook - An AudioBook application on Android
-
-Chào mừng bạn đến với **KTbook** – một ứng dụng audiobook và podcast thông minh. Dự án này được xây dựng với mục tiêu mang đến trải nghiệm nghe liền mạch, kết hợp cùng sức mạnh của AI để tóm tắt nội dung, giúp bạn nắm bắt ý chính một cách nhanh chóng và hiệu quả.
+# Rổ Sách - Ưng dụng audiobook và podcast thông minh. 
+Dự án này được xây dựng với mục tiêu mang đến trải nghiệm nghe liền mạch, kết hợp cùng sức mạnh của AI để tóm tắt nội dung, giúp bạn nắm bắt ý chính một cách nhanh chóng và hiệu quả.
 
 ## 📖 Giới thiệu chung
 
