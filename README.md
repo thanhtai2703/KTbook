@@ -3,7 +3,7 @@ Dự án này được xây dựng với mục tiêu mang đến trải nghiệm
 
 ## 📖 Giới thiệu chung
 
-Trong thế giới bận rộn ngày nay, việc tiếp thu kiến thức qua sách nói (audiobook) và podcast ngày càng trở nên phổ biến. **KTbook** không chỉ là một trình phát âm thanh đơn thuần mà còn là một người trợ lý thông minh. 
+Trong thế giới bận rộn ngày nay, việc tiếp thu kiến thức qua sách nói (audiobook) và podcast ngày càng trở nên phổ biến. **Rổ Sách** không chỉ là một trình phát âm thanh đơn thuần mà còn là một người trợ lý thông minh. 
 
 Ứng dụng phục vụ cho đồ án môn học.
 
@@ -21,7 +21,8 @@ Trong thế giới bận rộn ngày nay, việc tiếp thu kiến thức qua s�
 ---
 
 ## 💻 Công nghệ sử dụng
-
+Android Studio
+Firebase
 ## 🚀 Cài đặt và Chạy dự án
 
 ### 2. Cài đặt
