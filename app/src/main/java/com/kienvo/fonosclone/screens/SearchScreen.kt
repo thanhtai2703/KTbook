@@ -234,7 +234,7 @@ fun SearchScreen(navController: NavController) {
     }
 }
 
-// [HELPER] Tự động chọn Image hoặc AsyncImage
+// [HELPER]
 @Composable
 fun CardImage(source: Any, modifier: Modifier) {
     if (source is Int) {
@@ -267,7 +267,7 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any, navController: NavControl
             .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
-                    colors = listOf(Color(0xFF24135F), Color(0xFF651FFF)),
+                    colors = listOf(Color(0xFF24135F), Color(0xFF24135F)),
                     start = Offset(0f, 0f), end = Offset(1000f, 1000f)
                 )
             )
@@ -307,7 +307,6 @@ fun CategorySmallCard(
             .aspectRatio(1.9f)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(colors = listOf(item.topColor, item.bottomColor)))
-            // [QUAN TRỌNG] Gắn sự kiện click vào đây
             .clickable { onClick() }
     ) {
         CardImage(

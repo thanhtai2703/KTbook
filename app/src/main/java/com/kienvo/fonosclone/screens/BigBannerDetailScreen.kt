@@ -42,8 +42,8 @@ private val BgTop = Color(0xFF1C1626)
 private val BgMid = Color(0xFF171225)
 private val BgBottom = Color(0xFF0F0C1A)
 
-private val Purple = Color(0xFF4B2E83)
-private val PurpleSoft = Color(0xFF5C3B9D)
+private val Purple = Color(0xFF24135F)
+private val PurpleSoft = Color(0xFF24135F)
 
 private val Card = Color(0xFF1E1B2E)
 private val CardSoft = Color(0xFF25223A)
@@ -116,7 +116,7 @@ fun BigBannerDetailScreen(navController: NavController) {
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
 
-            item { BannerSectionFonos() }
+            item { BannerSection() }
 
             item {
                 Column(modifier = Modifier.padding(top = 24.dp)) {
@@ -126,7 +126,7 @@ fun BigBannerDetailScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(topBooks) { book ->
-                            BookRankedItemFonos(book)
+                            BookRankedItem(book)
                         }
                     }
                 }
@@ -151,7 +151,7 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun BannerSectionFonos() {
+fun BannerSection() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,7 +204,7 @@ fun BannerSectionFonos() {
 }
 
 @Composable
-fun BookRankedItemFonos(book: BookRanked) {
+fun BookRankedItem(book: BookRanked) {
     Column(
         modifier = Modifier
             .width(140.dp)
