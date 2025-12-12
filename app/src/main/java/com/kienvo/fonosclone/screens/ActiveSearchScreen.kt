@@ -58,15 +58,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kienvo.fonosclone.model.Book
 import kotlinx.coroutines.delay
 
 // Model Book
-data class Book(
-    val id: String,
-    val title: String,
-    val author: String,
-    val coverUrl: String
-)
 
 @Composable
 fun ActiveSearchScreen(navController: NavController) {
@@ -81,7 +76,12 @@ fun ActiveSearchScreen(navController: NavController) {
 
     // --- DỮ LIỆU SÁCH ---
     val hotBooks = listOf(
-        Book("18", "Một Thoáng Rực Rỡ", "Ocean Vuong", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/motthoangtarucroonhangian011.jpg?v=1705552591463"),
+        Book(
+            "18",
+            "Một Thoáng Rực Rỡ",
+            "Ocean Vuong",
+            "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/motthoangtarucroonhangian011.jpg?v=1705552591463"
+        ),
         Book("20", "Hoàng Tử Bé", "Saint-Exupéry", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/hoangtube.jpg?v=1705552581243"),
         Book("17", "Sách Chữa Lành", "Brianna Wiest", "https://davibooks.vn/stores/uploads/z/z4729024325679_319a5b9666920fe8e785dcf3f0102996__97337_image2_800_big.jpg"),
         Book("24", "Chữa Lành Bản Thân", "Dr. Ahona Guha", "https://product.hstatic.net/200000696663/product/8936225390362_36cd29599252412f84c5647b0aa18f6b_1024x1024.jpg")

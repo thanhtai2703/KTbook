@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
+import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
 import com.kienvo.fonosclone.screens.FonosHomeScreen
 import com.kienvo.fonosclone.screens.PersonalScreen
@@ -182,6 +183,9 @@ fun AppNavigation(navController: NavHostController) {
                 }
                 composable("search") { SearchScreen(navController) }
                 composable("active_search") { ActiveSearchScreen(navController) }
+                composable("big_banner_detail") {
+                    BigBannerDetailScreen(navController = navController)
+                }
 
                 // --- MÀN HÌNH CHI TIẾT ---
                 composable(

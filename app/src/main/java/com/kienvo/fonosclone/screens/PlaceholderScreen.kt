@@ -55,7 +55,7 @@ fun PlaceholderScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Tính năng \"$title\"\nđang được phát triển 🔨",
+                text = "Tính năng này đang được phát triển 🔨",
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
                 fontSize = 18.sp,

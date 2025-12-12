@@ -44,7 +44,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -65,7 +64,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.rosach.R
 
-// [CẬP NHẬT] imageSource là Any để nhận cả String (URL) và Int (Resource ID)
+// Model
 data class CategoryItemData(
     val title: String,
     val topColor: Color,
@@ -77,11 +76,10 @@ data class CategoryItemData(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SearchScreen(navController: NavController) {
-    var searchQuery by remember { mutableStateOf("") }
-    val headerColor = Color(0xFF0F1015)
-    val bodyColor = Color(0xFF13161F)
+    val headerColor = Color(0xFF20272F)
+    val bodyColor = Color(0xFF1B1C20)
 
-    // Dữ liệu mẫu (Bạn có thể thay URL bằng R.drawable.ten_anh)
+    // Dữ liệu mẫu
     val categories = listOf(
         CategoryItemData(
             "Sách nói", Color(0xFF5D4037), Color(0xFF8D6E63),
@@ -93,8 +91,6 @@ fun SearchScreen(navController: NavController) {
             Icons.Default.VideoLibrary,
             "https://cdn-icons-png.flaticon.com/512/3163/3163473.png"
         ),
-        // Ví dụ dùng ảnh trong máy (bỏ comment nếu có ảnh):
-        // CategoryItemData("Ebook", Color(0xFF1B5E20), Color(0xFF43A047), Icons.Default.MenuBook, R.drawable.img_ebook),
         CategoryItemData(
             "Ebook", Color(0xFF1B5E20), Color(0xFF43A047),
             Icons.Default.MenuBook,
@@ -152,6 +148,8 @@ fun SearchScreen(navController: NavController) {
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Nút tìm kiếm giả
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,7 +157,6 @@ fun SearchScreen(navController: NavController) {
                         .clip(RoundedCornerShape(28.dp))
                         .background(Color.White)
                         .clickable {
-                            // [QUAN TRỌNG] Bấm vào là nhảy sang màn hình ActiveSearch
                             navController.navigate("active_search")
                         }
                         .padding(horizontal = 16.dp),
@@ -199,12 +196,35 @@ fun SearchScreen(navController: NavController) {
                     item(span = { GridItemSpan(2) }) {
                         BigBannerCard(
                             icon = Icons.Default.AutoStories,
-                            imageSource = bannerImageSource
+                            imageSource = bannerImageSource,
+                            navController = navController
                         )
                     }
 
                     items(categories) { category ->
-                        CategorySmallCard(category)
+                        CategorySmallCard(
+                            item = category,
+                            // [LOGIC MỚI] Xử lý sự kiện click
+                            onClick = {
+                                when (category.title) {
+                                    "Sách nói" -> {
+                                        navController.navigate("home") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                    "PodCourse", "Podcast", "Truyện ngủ\n& Nhạc" -> {
+                                        // Chuyển về Library (PlaceholderScreen)
+                                        navController.navigate("library") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                }
+                            }
+                        )
                     }
 
                     item(span = { GridItemSpan(2) }) { Spacer(modifier = Modifier.height(100.dp)) }
@@ -214,26 +234,24 @@ fun SearchScreen(navController: NavController) {
     }
 }
 
-// [HÀM MỚI] Tự động chọn Image hoặc AsyncImage
+// [HELPER] Tự động chọn Image hoặc AsyncImage
 @Composable
 fun CardImage(source: Any, modifier: Modifier) {
     if (source is Int) {
-        // Nếu là Resource ID (Ảnh trong máy)
         Image(
             painter = painterResource(id = source),
             contentDescription = null,
-            contentScale = ContentScale.Crop, // Crop để lấp đầy khung
+            contentScale = ContentScale.Crop,
             modifier = modifier
         )
     } else {
-        // Nếu là URL (String)
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(source)
                 .crossfade(true)
                 .build(),
             contentDescription = null,
-            contentScale = ContentScale.Crop, // Crop để lấp đầy khung
+            contentScale = ContentScale.Crop,
             modifier = modifier
         )
     }
@@ -241,7 +259,7 @@ fun CardImage(source: Any, modifier: Modifier) {
 
 // --- WIDGET BANNER LỚN ---
 @Composable
-fun BigBannerCard(icon: ImageVector, imageSource: Any) {
+fun BigBannerCard(icon: ImageVector, imageSource: Any, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -253,7 +271,7 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any) {
                     start = Offset(0f, 0f), end = Offset(1000f, 1000f)
                 )
             )
-            .clickable { }
+            .clickable {navController.navigate("big_banner_detail") }
     ) {
         Column(modifier = Modifier.align(Alignment.TopStart).padding(start = 18.dp, top = 18.dp).fillMaxWidth(0.65f)) {
             Text("Mới: Sách Tiếng Anh", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -266,12 +284,11 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any) {
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 18.dp).size(30.dp)
         )
 
-        // Dùng FonosImage thay vì AsyncImage trực tiếp
         CardImage(
             source = imageSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .width(120.dp).height(170.dp) // [SỬA 2] Kích thước hình
+                .width(120.dp).height(170.dp)
                 .offset(x = 20.dp, y = 26.dp)
                 .rotate(-22f)
                 .alpha(0.95f)
@@ -279,26 +296,29 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any) {
     }
 }
 
-// --- WIDGET CARD NHỎ ---
+// --- WIDGET CARD NHỎ [ĐÃ SỬA THÊM onClick] ---
 @Composable
-fun CategorySmallCard(item: CategoryItemData) {
+fun CategorySmallCard(
+    item: CategoryItemData,
+    onClick: () -> Unit // Thêm tham số onClick
+) {
     Box(
         modifier = Modifier
             .aspectRatio(1.9f)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(colors = listOf(item.topColor, item.bottomColor)))
-            .clickable { }
+            // [QUAN TRỌNG] Gắn sự kiện click vào đây
+            .clickable { onClick() }
     ) {
-        // Dùng FonosImage để hiển thị (URL hoặc Int)
         CardImage(
             source = item.imageSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .width(90.dp).height(120.dp) // [SỬA 2] Set kích thước
-                .offset(x = 15.dp, y = 20.dp) // Offset chuẩn theo file của bạn
+                .width(90.dp).height(120.dp)
+                .offset(x = 15.dp, y = 20.dp)
                 .rotate(-8f)
                 .alpha(0.95f)
-                .clip(RoundedCornerShape(8.dp)) // Bo góc ảnh
+                .clip(RoundedCornerShape(8.dp))
         )
 
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
