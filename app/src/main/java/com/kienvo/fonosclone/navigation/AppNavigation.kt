@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
+import com.kienvo.fonosclone.screens.AudioPlayerScreen
 import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
 import com.kienvo.fonosclone.screens.FonosHomeScreen
