@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "921004560004",
+    "project_id": "rosach-5d3e8",
+    "storage_bucket": "rosach-5d3e8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921004560004:android:5afad71f094e8a2855bcd1",
+        "android_client_info": {
+          "package_name": "com.example.rosach"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlJHnL_nTiwH9-zxza18u8bxC_8aKspn8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

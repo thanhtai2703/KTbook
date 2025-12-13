@@ -203,6 +203,18 @@ fun AppNavigation(navController: NavHostController) {
 
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
                 composable("personal") { PersonalScreen(navController) }
+
+                // --- MÀN HÌNH PHÁT AUDIO ---
+                composable(
+                    route = "audio_player/{bookId}",
+                    arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val bookId = backStackEntry.arguments?.getString("bookId")
+                    AudioPlayerScreen(
+                        navController = navController,
+                        bookId = bookId
+                    )
+                }
             }
         }
     }

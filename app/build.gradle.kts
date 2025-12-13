@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -51,6 +53,14 @@ dependencies {
 
     implementation("androidx.compose.animation:animation:1.7.0-beta01") // Hoặc bản stable mới nhất
     implementation("androidx.navigation:navigation-compose:2.8.0-alpha08") // Cần bản navigation mới hỗ trợ Shared Element
+
+    // ExoPlayer for audio playback
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))   // Import the Firebase BoM
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-storage")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

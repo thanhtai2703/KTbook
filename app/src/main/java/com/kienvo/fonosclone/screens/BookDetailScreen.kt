@@ -77,6 +77,7 @@ import com.kienvo.fonosclone.ui.theme.Yellow
 import com.kienvo.fonosclone.widgets.ActionCircleButton
 import com.kienvo.fonosclone.widgets.AmbienceBottomSheet
 import com.kienvo.fonosclone.widgets.AmbienceSliderItem
+import com.kienvo.fonosclone.widgets.AudioPlayerWidget
 import com.kienvo.fonosclone.widgets.BookStatItem
 import com.kienvo.fonosclone.widgets.ChapterItem
 import com.kienvo.fonosclone.widgets.InfoRow
@@ -92,12 +93,25 @@ fun BookDetailScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    // --- MOCK DATA ---
-    val mockTitle = "Muôn Kiếp Nhân Sinh"
-    val mockAuthor = "Nguyên Phong"
-    val mockCover = "https://product.hstatic.net/200000122283/product/bia1-muonkiepnhansinh3-01_d1a246c6abfd4621bed63b8ca3b73ba9_master.jpg"
-    val mockDesc = "Một cuốn sách thức tỉnh về luật nhân quả, luân hồi và vị thế của con người trong vũ trụ. Thông qua câu chuyện kỳ lạ của Thomas - một doanh nhân tài chính ở New York, tác giả Nguyên Phong đã vén màn những bí ẩn về kiếp sống..."
-    val chapters = listOf(
+    // Kiểm tra nếu đây là sách "Đắc Nhân Tâm"
+    val isDacNhanTam = bookId == "2"
+
+    // Dữ liệu sách thay đổi theo bookId
+    val bookTitle = if (isDacNhanTam) "Đắc Nhân Tâm" else "Muôn Kiếp Nhân Sinh"
+    val bookAuthor = if (isDacNhanTam) "Dale Carnegie" else "Nguyên Phong"
+    val bookCover = if (isDacNhanTam)
+        "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg"
+        else "https://product.hstatic.net/200000122283/product/bia1-muonkiepnhansinh3-01_d1a246c6abfd4621bed63b8ca3b73ba9_master.jpg"
+    val bookDesc = if (isDacNhanTam)
+        "Cuốn sách kinh điển về nghệ thuật giao tiếp và ứng xử. Dale Carnegie chia sẻ những nguyên tắc vàng trong việc xây dựng mối quan hệ, ảnh hưởng tích cực đến người khác và đạt được thành công trong cuộc sống."
+        else "Một cuốn sách thức tỉnh về luật nhân quả, luân hồi và vị thế của con người trong vũ trụ..."
+
+    val chapters = if (isDacNhanTam) listOf(
+        "Phần 1: Những kỹ thuật cơ bản trong việc ứng xử với con người",
+        "Phần 2: Sáu cách để được người khác yêu thích",
+        "Phần 3: Làm thế nào để thuyết phục được người khác",
+        "Phần 4: Trở thành một nhà lãnh đạo"
+    ) else listOf(
         "Chương 1: Cuộc gặp gỡ định mệnh tại New York",
         "Chương 2: Những bí ẩn của tiền kiếp",
         "Chương 3: Luật Nhân Quả vận hành thế nào?",
@@ -137,7 +151,7 @@ fun BookDetailScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             // LAYER 1: BACKGROUND MỜ
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(mockCover).crossfade(true).build(),
+                model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -151,7 +165,7 @@ fun BookDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = paddingValues.calculateTopPadding())
-                    .verticalScroll(rememberScrollState()), // Scroll cho toàn màn hình
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -159,7 +173,7 @@ fun BookDetailScreen(
                 // --- TOP SECTION: BÌA SÁCH & ACTION ---
                 with(sharedTransitionScope) {
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current).data(mockCover).crossfade(true).build(),
+                        model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
                         contentDescription = "Book Cover",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -176,7 +190,7 @@ fun BookDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = mockTitle,
+                    text = bookTitle,
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -185,7 +199,7 @@ fun BookDetailScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Tác giả: $mockAuthor",
+                    text = "Tác giả: $bookAuthor",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.LightGray,
                     textAlign = TextAlign.Center
@@ -202,7 +216,12 @@ fun BookDetailScreen(
                     ActionCircleButton(icon = Icons.Default.FavoriteBorder)
                     Spacer(modifier = Modifier.width(24.dp))
                     Button(
-                        onClick = { },
+                        onClick = {
+                            // Chỉ navigate đến AudioPlayerScreen nếu là sách "Đắc Nhân Tâm"
+                            if (isDacNhanTam) {
+                                navController.navigate("audio_player/$bookId")
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Yellow),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier
@@ -243,56 +262,18 @@ fun BookDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        BookStatItem(Icons.Default.AccessTime, "12h 45p", "Thời lượng")
-                        BookStatItem(Icons.Default.Category, "Tâm linh", "Thể loại")
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 2. BANNER HỘI VIÊN (Màu Be nhạt giống Fonos)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFF4E0)) // Màu kem/be
-                            .padding(16.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // Icon lửa/vương miện
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .background(Color(0xFFFF6D00), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.Diamond, contentDescription = null, tint = Color.White)
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(
-                                    "Man88 - Thành viên VIP",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                                Text(
-                                    "Bản lĩnh tỷ phú viên kim cương phải bóng loáng.",
-                                    color = Color.DarkGray,
-                                    fontSize = 13.sp,
-                                    lineHeight = 18.sp
-                                )
-                            }
-                        }
+                        BookStatItem(Icons.Default.AccessTime, if (isDacNhanTam) "8h 30p" else "12h 45p", "Thời lượng")
+                        BookStatItem(Icons.Default.Category, if (isDacNhanTam) "Kỹ năng sống" else "Tâm linh", "Thể loại")
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
                     MyDivider()
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 3. THÔNG TIN THÊM (Giọng đọc, NXB)
-                    InfoRow(label = "Giọng đọc", value = "Kiên Cặc Bự")
+                    // 3. THÔNG TIN THÊM
+                    InfoRow(label = "Giọng đọc", value = if (isDacNhanTam) "Minh Châu" else "Kiên Cặc Bự")
                     Spacer(modifier = Modifier.height(12.dp))
-                    InfoRow(label = "Nhà xuất bản", value = "First News - Trí Việt")
+                    InfoRow(label = "Nhà xuất bản", value = if (isDacNhanTam) "NXB Tổng Hợp TPHCM" else "First News - Trí Việt")
                     Spacer(modifier = Modifier.height(12.dp))
                     InfoRow(label = "Phát hành", value = "15/08/2024")
 
@@ -303,7 +284,7 @@ fun BookDetailScreen(
                     // 4. GIỚI THIỆU
                     SectionTitle(title = "Giới thiệu")
                     Text(
-                        text = mockDesc,
+                        text = bookDesc,
                         color = Color.LightGray,
                         lineHeight = 24.sp,
                         fontSize = 15.sp,
@@ -314,14 +295,12 @@ fun BookDetailScreen(
                     MyDivider()
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 5. DANH SÁCH CHƯƠNG (Chapter List)
+                    // 5. DANH SÁCH CHƯƠNG
                     SectionTitle(title = "Danh sách chương")
-                    // Dùng ForEach thay vì LazyColumn vì đang nằm trong Column scrollable
                     chapters.forEachIndexed { index, chapterName ->
                         ChapterItem(index = index + 1, name = chapterName)
                     }
 
-                    // Spacer lớn cuối cùng
                     Spacer(modifier = Modifier.height(100.dp))
                 }
             }
