@@ -28,7 +28,7 @@ class AudioPlayerService(private val context: Context) {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // URL audio "Đắc Nhân Tâm" từ Firebase
-    private val dacNhanTamAudioUrl = "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/dac-nhan.mp3?alt=media&token=4f557391-d2b3-4ed9-8cc3-009c6916faac"
+    private val dacNhanTamAudioUrl = "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
 
     init {
         initializePlayer()
@@ -54,8 +54,6 @@ class AudioPlayerService(private val context: Context) {
             val mediaItem = MediaItem.fromUri(dacNhanTamAudioUrl)
             player.setMediaItem(mediaItem)
             player.prepare()
-
-            // Update duration when ready
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_READY) {

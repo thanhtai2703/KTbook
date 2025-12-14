@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
 import com.kienvo.fonosclone.screens.AudioPlayerScreen
+import com.kienvo.fonosclone.screens.AuthScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
 import com.kienvo.fonosclone.screens.FonosHomeScreen
 import com.kienvo.fonosclone.screens.PersonalScreen
@@ -181,6 +182,11 @@ fun AppNavigation(navController: NavHostController) {
                         animatedVisibilityScope = this
                     )
                 }
+
+                composable("auth") {
+                    AuthScreen(navController = navController)
+                }
+
                 composable("search") { SearchScreen(navController) }
                 composable("active_search") { ActiveSearchScreen(navController) }
 

@@ -35,8 +35,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -51,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.firebase.auth.FirebaseAuth
 import com.kienvo.fonosclone.model.getBooks
 import com.kienvo.fonosclone.model.getHomeScreenData
 import com.kienvo.fonosclone.ui.theme.DarkBg
@@ -76,9 +79,13 @@ fun FonosHomeScreen(
     // State quản lý hình nền thay đổi theo carousel
     val (currentBgUrl, setCurrentBgUrl) = remember { mutableStateOf(carouselBooks.firstOrNull()?.coverUrl) }
 
-    // State giả lập trạng thái đăng nhập
-    val isLoggedIn = remember { mutableStateOf(false) }
-    val userAvatarUrl = "https://icons.veryicon.com/png/o/miscellaneous/common-icons-31/default-avatar-2.png"
+    // Firebase Authentication - Kiểm tra trạng thái đăng nhập thực tế
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    var isLoggedIn by remember { mutableStateOf(currentUser != null) }
+    val userAvatarUrl = currentUser?.photoUrl?.toString()
+        ?: "https://icons.veryicon.com/png/o/miscellaneous/common-icons-31/default-avatar-2.png"
+    val userEmail = currentUser?.email ?: ""
 
     val topBarGradient = Brush.verticalGradient(
         colors = listOf(
@@ -119,10 +126,10 @@ fun FonosHomeScreen(
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         // 1. Nút Đăng nhập (Chỉ hiện khi CHƯA đăng nhập)
-                        if (!isLoggedIn.value) {
+                        if (!isLoggedIn) {
                             Button(
                                 onClick = {
-                                    isLoggedIn.value = true
+                                    navController?.navigate("auth")
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                                 contentPadding = PaddingValues(0.dp),
@@ -153,11 +160,14 @@ fun FonosHomeScreen(
                                 .background(Color.White.copy(alpha = 0.2f))
                                 .clickable {
                                     // Click vào avatar để test đăng xuất
-                                    if (isLoggedIn.value) isLoggedIn.value = false
+                                    if (isLoggedIn) {
+                                        auth.signOut()
+                                        isLoggedIn = false
+                                    }
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            if (isLoggedIn.value) {
+                            if (isLoggedIn) {
                                 // Nếu đã login -> Load ảnh
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
