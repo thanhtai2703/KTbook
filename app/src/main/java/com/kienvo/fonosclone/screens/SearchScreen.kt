@@ -3,6 +3,7 @@ package com.kienvo.fonosclone.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border // [1] Import border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -79,7 +81,7 @@ fun SearchScreen(navController: NavController) {
     val headerColor = Color(0xFF20272F)
     val bodyColor = Color(0xFF1B1C20)
 
-    // Dữ liệu mẫu
+    // Dữ liệu mẫu (Giữ nguyên)
     val categories = listOf(
         CategoryItemData(
             "Sách nói", Color(0xFF5D4037), Color(0xFF8D6E63),
@@ -123,7 +125,7 @@ fun SearchScreen(navController: NavController) {
         )
     )
 
-    val bannerImageSource: Any = "https://cdn-icons-png.flaticon.com/512/2368/2368447.png"
+    val bannerImageSource: Any = "https://as1.ftcdn.net/v2/jpg/03/70/42/66/1000_F_370426690_Pejt9KxjWTHPklsKwripaxr0iA17zupF.jpg"
 
     Scaffold(containerColor = headerColor) { paddingValues ->
         Column(
@@ -204,7 +206,6 @@ fun SearchScreen(navController: NavController) {
                     items(categories) { category ->
                         CategorySmallCard(
                             item = category,
-                            // [LOGIC MỚI] Xử lý sự kiện click
                             onClick = {
                                 when (category.title) {
                                     "Sách nói" -> {
@@ -215,7 +216,6 @@ fun SearchScreen(navController: NavController) {
                                         }
                                     }
                                     "PodCourse", "Podcast", "Truyện ngủ\n& Nhạc" -> {
-                                        // Chuyển về Library (PlaceholderScreen)
                                         navController.navigate("library") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
@@ -264,14 +264,16 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any, navController: NavControl
         modifier = Modifier
             .fillMaxWidth()
             .height(165.dp)
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp)) // [QUAN TRỌNG] Bo góc cho nội dung
+            // [THÊM] Viền xám nhạt, bo góc 18dp trùng với clip
+            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
                     colors = listOf(Color(0xFF24135F), Color(0xFF24135F)),
                     start = Offset(0f, 0f), end = Offset(1000f, 1000f)
                 )
             )
-            .clickable {navController.navigate("big_banner_detail") }
+            .clickable { navController.navigate("big_banner_detail") }
     ) {
         Column(modifier = Modifier.align(Alignment.TopStart).padding(start = 18.dp, top = 18.dp).fillMaxWidth(0.65f)) {
             Text("Mới: Sách Tiếng Anh", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -288,24 +290,27 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any, navController: NavControl
             source = imageSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .width(120.dp).height(170.dp)
-                .offset(x = 20.dp, y = 26.dp)
-                .rotate(-22f)
+                .width(200.dp).height(170.dp)
+                .offset(x = 20.dp, y = 70.dp)
+                .rotate(-15f)
                 .alpha(0.95f)
+                .clip(RoundedCornerShape(12.dp))
         )
     }
 }
 
-// --- WIDGET CARD NHỎ [ĐÃ SỬA THÊM onClick] ---
+// --- WIDGET CARD NHỎ ---
 @Composable
 fun CategorySmallCard(
     item: CategoryItemData,
-    onClick: () -> Unit // Thêm tham số onClick
+    onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .aspectRatio(1.9f)
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp)) // [QUAN TRỌNG] Bo góc cho nội dung
+            // [THÊM] Viền xám nhạt cho card nhỏ
+            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(colors = listOf(item.topColor, item.bottomColor)))
             .clickable { onClick() }
     ) {
