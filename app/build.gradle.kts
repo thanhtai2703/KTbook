@@ -61,6 +61,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))   // Import the Firebase BoM
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-auth-ktx:23.0.0")  // Firebase Authentication
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
