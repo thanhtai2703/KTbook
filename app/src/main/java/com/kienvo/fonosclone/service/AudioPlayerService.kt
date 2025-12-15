@@ -54,8 +54,6 @@ class AudioPlayerService(private val context: Context) {
             val mediaItem = MediaItem.fromUri(dacNhanTamAudioUrl)
             player.setMediaItem(mediaItem)
             player.prepare()
-
-            // Update duration when ready
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_READY) {
