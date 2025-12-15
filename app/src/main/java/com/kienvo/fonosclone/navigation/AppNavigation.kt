@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
 import com.kienvo.fonosclone.screens.AudioPlayerScreen
+import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.AuthScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
 import com.kienvo.fonosclone.screens.FonosHomeScreen
@@ -31,6 +32,7 @@ import com.kienvo.fonosclone.screens.PersonalScreen
 import com.kienvo.fonosclone.screens.PlaceholderScreen
 import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
+import com.kienvo.fonosclone.screens.EbookScreen
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -189,6 +191,9 @@ fun AppNavigation(navController: NavHostController) {
 
                 composable("search") { SearchScreen(navController) }
                 composable("active_search") { ActiveSearchScreen(navController) }
+                composable("big_banner_detail") {
+                    BigBannerDetailScreen(navController = navController)
+                }
 
                 // --- MÀN HÌNH CHI TIẾT ---
                 composable(
@@ -205,6 +210,7 @@ fun AppNavigation(navController: NavHostController) {
                 }
 
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
+                composable(Screen.Ebook.route) { EbookScreen(navController) }
                 composable("personal") { PersonalScreen(navController) }
 
                 // --- MÀN HÌNH PHÁT AUDIO ---
