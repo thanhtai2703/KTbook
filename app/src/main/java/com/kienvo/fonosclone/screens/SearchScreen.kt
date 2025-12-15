@@ -219,6 +219,9 @@ fun SearchScreen(navController: NavController) {
                                             restoreState = true
                                         }
                                     }
+                                    "Thiếu nhi" -> {
+                                        navController.navigate(Screen.Kids.route)
+                                    }
                                     "PodCourse", "Podcast", "Truyện ngủ\n& Nhạc" -> {
                                         navController.navigate("library") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
