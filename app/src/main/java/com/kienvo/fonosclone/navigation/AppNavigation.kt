@@ -33,6 +33,7 @@ import com.kienvo.fonosclone.screens.PlaceholderScreen
 import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
 import com.kienvo.fonosclone.screens.EbookScreen
+import com.kienvo.fonosclone.screens.KidsScreen
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -211,6 +212,7 @@ fun AppNavigation(navController: NavHostController) {
 
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
                 composable(Screen.Ebook.route) { EbookScreen(navController) }
+                composable(Screen.Kids.route) { KidsScreen(navController) }
                 composable("personal") { PersonalScreen(navController) }
 
                 // --- MÀN HÌNH PHÁT AUDIO ---
