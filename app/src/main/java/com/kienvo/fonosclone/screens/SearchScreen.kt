@@ -103,17 +103,17 @@ fun SearchScreen(navController: NavController) {
         CategoryItemData(
             "Thiếu nhi", Color(0xFFB71C1C), Color(0xFFE57373),
             Icons.Default.ChildCare,
-            R.drawable.thieunhi_image
+            R.drawable.kids_image
         ),
         CategoryItemData(
             "Thiền", Color(0xFF004D40), Color(0xFF009688),
             Icons.Default.SelfImprovement,
-            R.drawable.thien_image
+            R.drawable.meditation_image
         ),
         CategoryItemData(
             "Truyện ngủ\n& Nhạc", Color(0xFF311B92), Color(0xFF673AB7),
             Icons.Default.Nightlight,
-            R.drawable.truyenngu_image
+            R.drawable.bedtime_story_image
         ),
         CategoryItemData(
             "Podcast", Color(0xFF33691E), Color(0xFF689F38),

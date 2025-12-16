@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.rosach" />
-                  <option name="mobileSdkAppId" value="1:921004560004:android:5afad71f094e8a2855bcd1" />
-                  <option name="projectId" value="rosach-5d3e8" />
-                  <option name="projectNumber" value="921004560004" />
+                  <option name="mobileSdkAppId" value="1:123456789000:android:abcdef1234567890" />
+                  <option name="projectId" value="fonosclone-demo" />
+                  <option name="projectNumber" value="123456789000" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
