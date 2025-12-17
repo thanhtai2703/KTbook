@@ -8,4 +8,6 @@ sealed class Screen(val route: String) {
     object AudioPlayer : Screen("audio_player/{bookId}") {
         fun createRoute(bookId: String) = "audio_player/$bookId"
     }
+    object Ebook : Screen("ebook")
+    object Kids : Screen("kids")
 }

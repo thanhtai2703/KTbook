@@ -3,6 +3,7 @@ package com.kienvo.fonosclone.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border // [1] Import border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +30,7 @@ import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Headphones
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.Search
@@ -41,10 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -64,8 +61,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.rosach.R
+import com.kienvo.fonosclone.navigation.Screen
 
-// [CẬP NHẬT] imageSource là Any để nhận cả String (URL) và Int (Resource ID)
+// Model
 data class CategoryItemData(
     val title: String,
     val topColor: Color,
@@ -77,11 +75,10 @@ data class CategoryItemData(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SearchScreen(navController: NavController) {
-    var searchQuery by remember { mutableStateOf("") }
-    val headerColor = Color(0xFF0F1015)
-    val bodyColor = Color(0xFF13161F)
+    val headerColor = Color(0xFF20272F)
+    val bodyColor = Color(0xFF1B1C20)
 
-    // Dữ liệu mẫu (Bạn có thể thay URL bằng R.drawable.ten_anh)
+    // Dữ liệu mẫu (Giữ nguyên)
     val categories = listOf(
         CategoryItemData(
             "Sách nói", Color(0xFF5D4037), Color(0xFF8D6E63),
@@ -93,11 +90,9 @@ fun SearchScreen(navController: NavController) {
             Icons.Default.VideoLibrary,
             "https://cdn-icons-png.flaticon.com/512/3163/3163473.png"
         ),
-        // Ví dụ dùng ảnh trong máy (bỏ comment nếu có ảnh):
-        // CategoryItemData("Ebook", Color(0xFF1B5E20), Color(0xFF43A047), Icons.Default.MenuBook, R.drawable.img_ebook),
         CategoryItemData(
             "Ebook", Color(0xFF1B5E20), Color(0xFF43A047),
-            Icons.Default.MenuBook,
+            Icons.AutoMirrored.Filled.MenuBook,
             "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/motthoangtarucroonhangian011.jpg?v=1705552591463"
         ),
         CategoryItemData(
@@ -108,17 +103,17 @@ fun SearchScreen(navController: NavController) {
         CategoryItemData(
             "Thiếu nhi", Color(0xFFB71C1C), Color(0xFFE57373),
             Icons.Default.ChildCare,
-            R.drawable.thieunhi_image
+            R.drawable.kids_image
         ),
         CategoryItemData(
             "Thiền", Color(0xFF004D40), Color(0xFF009688),
             Icons.Default.SelfImprovement,
-            R.drawable.thien_image
+            R.drawable.meditation_image
         ),
         CategoryItemData(
             "Truyện ngủ\n& Nhạc", Color(0xFF311B92), Color(0xFF673AB7),
             Icons.Default.Nightlight,
-            R.drawable.truyenngu_image
+            R.drawable.bedtime_story_image
         ),
         CategoryItemData(
             "Podcast", Color(0xFF33691E), Color(0xFF689F38),
@@ -127,7 +122,7 @@ fun SearchScreen(navController: NavController) {
         )
     )
 
-    val bannerImageSource: Any = "https://cdn-icons-png.flaticon.com/512/2368/2368447.png"
+    val bannerImageSource: Any = "https://as1.ftcdn.net/v2/jpg/03/70/42/66/1000_F_370426690_Pejt9KxjWTHPklsKwripaxr0iA17zupF.jpg"
 
     Scaffold(containerColor = headerColor) { paddingValues ->
         Column(
@@ -152,6 +147,8 @@ fun SearchScreen(navController: NavController) {
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Nút tìm kiếm giả
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,7 +156,6 @@ fun SearchScreen(navController: NavController) {
                         .clip(RoundedCornerShape(28.dp))
                         .background(Color.White)
                         .clickable {
-                            // [QUAN TRỌNG] Bấm vào là nhảy sang màn hình ActiveSearch
                             navController.navigate("active_search")
                         }
                         .padding(horizontal = 16.dp),
@@ -199,12 +195,43 @@ fun SearchScreen(navController: NavController) {
                     item(span = { GridItemSpan(2) }) {
                         BigBannerCard(
                             icon = Icons.Default.AutoStories,
-                            imageSource = bannerImageSource
+                            imageSource = bannerImageSource,
+                            navController = navController
                         )
                     }
 
                     items(categories) { category ->
-                        CategorySmallCard(category)
+                        CategorySmallCard(
+                            item = category,
+                            onClick = {
+                                when (category.title) {
+                                    "Sách nói" -> {
+                                        navController.navigate("home") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                    "Ebook" -> {
+                                        navController.navigate(Screen.Ebook.route) {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                    "Thiếu nhi" -> {
+                                        navController.navigate(Screen.Kids.route)
+                                    }
+                                    "PodCourse", "Podcast", "Truyện ngủ\n& Nhạc" -> {
+                                        navController.navigate("library") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                }
+                            }
+                        )
                     }
 
                     item(span = { GridItemSpan(2) }) { Spacer(modifier = Modifier.height(100.dp)) }
@@ -214,26 +241,24 @@ fun SearchScreen(navController: NavController) {
     }
 }
 
-// [HÀM MỚI] Tự động chọn Image hoặc AsyncImage
+// [HELPER]
 @Composable
 fun CardImage(source: Any, modifier: Modifier) {
     if (source is Int) {
-        // Nếu là Resource ID (Ảnh trong máy)
         Image(
             painter = painterResource(id = source),
             contentDescription = null,
-            contentScale = ContentScale.Crop, // Crop để lấp đầy khung
+            contentScale = ContentScale.Crop,
             modifier = modifier
         )
     } else {
-        // Nếu là URL (String)
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(source)
                 .crossfade(true)
                 .build(),
             contentDescription = null,
-            contentScale = ContentScale.Crop, // Crop để lấp đầy khung
+            contentScale = ContentScale.Crop,
             modifier = modifier
         )
     }
@@ -241,19 +266,21 @@ fun CardImage(source: Any, modifier: Modifier) {
 
 // --- WIDGET BANNER LỚN ---
 @Composable
-fun BigBannerCard(icon: ImageVector, imageSource: Any) {
+fun BigBannerCard(icon: ImageVector, imageSource: Any, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(165.dp)
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp)) // [QUAN TRỌNG] Bo góc cho nội dung
+            // [THÊM] Viền xám nhạt, bo góc 18dp trùng với clip
+            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
-                    colors = listOf(Color(0xFF24135F), Color(0xFF651FFF)),
+                    colors = listOf(Color(0xFF24135F), Color(0xFF24135F)),
                     start = Offset(0f, 0f), end = Offset(1000f, 1000f)
                 )
             )
-            .clickable { }
+            .clickable { navController.navigate("big_banner_detail") }
     ) {
         Column(modifier = Modifier.align(Alignment.TopStart).padding(start = 18.dp, top = 18.dp).fillMaxWidth(0.65f)) {
             Text("Mới: Sách Tiếng Anh", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -266,39 +293,43 @@ fun BigBannerCard(icon: ImageVector, imageSource: Any) {
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 18.dp).size(30.dp)
         )
 
-        // Dùng FonosImage thay vì AsyncImage trực tiếp
         CardImage(
             source = imageSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .width(120.dp).height(170.dp) // [SỬA 2] Kích thước hình
-                .offset(x = 20.dp, y = 26.dp)
-                .rotate(-22f)
+                .width(200.dp).height(170.dp)
+                .offset(x = 20.dp, y = 70.dp)
+                .rotate(-15f)
                 .alpha(0.95f)
+                .clip(RoundedCornerShape(12.dp))
         )
     }
 }
 
 // --- WIDGET CARD NHỎ ---
 @Composable
-fun CategorySmallCard(item: CategoryItemData) {
+fun CategorySmallCard(
+    item: CategoryItemData,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .aspectRatio(1.9f)
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp)) // [QUAN TRỌNG] Bo góc cho nội dung
+            // [THÊM] Viền xám nhạt cho card nhỏ
+            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(colors = listOf(item.topColor, item.bottomColor)))
-            .clickable { }
+            .clickable { onClick() }
     ) {
-        // Dùng FonosImage để hiển thị (URL hoặc Int)
         CardImage(
             source = item.imageSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .width(90.dp).height(120.dp) // [SỬA 2] Set kích thước
-                .offset(x = 15.dp, y = 20.dp) // Offset chuẩn theo file của bạn
+                .width(90.dp).height(120.dp)
+                .offset(x = 15.dp, y = 20.dp)
                 .rotate(-8f)
                 .alpha(0.95f)
-                .clip(RoundedCornerShape(8.dp)) // Bo góc ảnh
+                .clip(RoundedCornerShape(8.dp))
         )
 
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
