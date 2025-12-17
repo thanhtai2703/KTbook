@@ -65,7 +65,7 @@ import com.kienvo.fonosclone.widgets.FonosCarousel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun FonosHomeScreen(
+fun HomeScreen(
     navController: NavController? = null,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope

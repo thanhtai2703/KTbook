@@ -27,7 +27,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Diamond
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
@@ -127,6 +129,7 @@ fun BookDetailScreen(
     var rainVolume by remember { mutableFloatStateOf(0f) }
     var fireVolume by remember { mutableFloatStateOf(0f) }
     var cafeVolume by remember { mutableFloatStateOf(0f) }
+    var isFavorite by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = DarkBg,
@@ -213,7 +216,11 @@ fun BookDetailScreen(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ActionCircleButton(icon = Icons.Default.FavoriteBorder)
+                    ActionCircleButton(
+                        icon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+                    ){
+                        isFavorite = !isFavorite
+                    }
                     Spacer(modifier = Modifier.width(24.dp))
                     Button(
                         onClick = {
@@ -264,6 +271,7 @@ fun BookDetailScreen(
                     ) {
                         BookStatItem(Icons.Default.AccessTime, if (isDacNhanTam) "8h 30p" else "12h 45p", "Thời lượng")
                         BookStatItem(Icons.Default.Category, if (isDacNhanTam) "Kỹ năng sống" else "Tâm linh", "Thể loại")
+                        BookStatItem(Icons.Default.House, if(isDacNhanTam) "Nhã Nam" else "Tổng hợp", "Nhà xuất bản")
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -272,8 +280,6 @@ fun BookDetailScreen(
 
                     // 3. THÔNG TIN THÊM
                     InfoRow(label = "Giọng đọc", value = if (isDacNhanTam) "Minh Châu" else "Kiên Cặc Bự")
-                    Spacer(modifier = Modifier.height(12.dp))
-                    InfoRow(label = "Nhà xuất bản", value = if (isDacNhanTam) "NXB Tổng Hợp TPHCM" else "First News - Trí Việt")
                     Spacer(modifier = Modifier.height(12.dp))
                     InfoRow(label = "Phát hành", value = "15/08/2024")
 

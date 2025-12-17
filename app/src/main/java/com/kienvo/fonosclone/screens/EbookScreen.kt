@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -52,6 +53,8 @@ fun EbookScreen(navController: NavController) {
 
             // Banner
             item {
+
+                Spacer(modifier = Modifier.height(24.dp))
                 EbookBanner()
                 Spacer(Modifier.height(24.dp))
             }
@@ -113,13 +116,19 @@ fun EbookTopBar(isVisible: Boolean, navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = {
-                navController.navigate("search") {
-                    popUpTo("ebook") { inclusive = true }
-                    launchSingleTop = true
-                }
-            }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Search", tint = Color.White)
+            IconButton(
+                modifier = Modifier
+                .background(Color.White.copy(alpha = 0.1f), shape = CircleShape)
+                .size(40.dp),
+                onClick = {
+                    navController.navigate("search") {
+                        popUpTo("ebook") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Search", tint = Color.White,modifier = Modifier.size(20.dp))
             }
 
             AnimatedVisibility(

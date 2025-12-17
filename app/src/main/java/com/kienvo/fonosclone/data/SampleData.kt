@@ -1,6 +1,7 @@
 package com.kienvo.fonosclone.data
 
 import com.kienvo.fonosclone.model.Book
+import com.example.rosach.R
 
 /**
  * File tập trung chứa TẤT CẢ dữ liệu giả lập của ứng dụng
@@ -16,7 +17,7 @@ object SampleData {
         Book("3", "Sapiens", "Yuval Noah Harari", "https://images-na.ssl-images-amazon.com/images/I/811PTyrckTL.jpg"),
         Book("4", "Cây Cam Ngọt Của Tôi", "José Mauro", "https://nld.mediacdn.vn/2021/1/22/13-cay-cam-ngot-161132379604435791636.jpg"),
         Book("5", "Trí Tuệ Do Thái", "Eran Katz", "https://bizweb.dktcdn.net/thumb/1024x1024/100/197/269/products/tri-tue-do-thai.jpg?v=1510634413673"),
-        Book("6", "Kinh Thánh Nói Gì Về Tương Lai", "Charles H. Dyer", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/kinh-thanh-noi-gi-ve-tuong-lai.jpg?v=1692868032187"),
+        Book("6", "Kinh Thánh Nói Gì Về Tương Lai", "Charles H. Dyer", "https://pos.nvncdn.com/d8267c-94460/ps/20230829_mcTihAZZ0o.jpeg?v=1693302878"),
         Book("7", "Đọc Vị Bất Kì Ai", "David J. Lieberman", "https://cdn.hstatic.net/products/200000900535/doc_vi_bat_ky_ai_de_khong_bi_loi_dung_-bia_1__tb_2025__899034494358448295b41a80dc16019e.jpg"),
         Book("8", "Muôn Kiếp Nhân Sinh", "Nguyên Phong", "https://product.hstatic.net/200000122283/product/bia1-muonkiepnhansinh3-01_d1a246c6abfd4621bed63b8ca3b73ba9_master.jpg"),
     )
@@ -44,7 +45,7 @@ object SampleData {
     )
 
     val detectiveBooks = listOf(
-        Book("25", "Những Cuộc Phiêu Lưu Của Sherlock Holmes", "Arthur Conan Doyle", "https://product.hstatic.net/1000237375/product/bia_truoc_sh_78b82a0001784b94933be85d99796552_master.jpg"),
+        Book("25", "Những Cuộc Phiêu Lưu Của Sherlock Holmes", "Arthur Conan Doyle", "https://rekhtabooks.com/cdn/shop/products/1111019984212.jpg?v=1680041886"),
         Book("26", "GOTH Những Kẻ Hắc Ám", "Otsuichi", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/gothnhungkehacam01.jpg?v=1705552558923"),
         Book("27", "Thú Tội", "Minato Kanae", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/thutoi01.jpg?v=1705552105693"),
         Book("28", "13.67", "Chan Ho Kei", "https://product.hstatic.net/200000287623/product/13.67_61e241f0b6d743d883517c6bbf260e44_master.jpg"),
@@ -73,7 +74,7 @@ object SampleData {
     )
 
     val freeEbooks = listOf(
-        EbookData("e5", "Dế Mèn Phiêu Lưu Ký", "Tô Hoài", "http://thdaithinha.giaoducmelinh.edu.vn/upload/28687/fck/01250404/2024_06_19_11_21_4419.jpg", 4.8),
+        EbookData("e5", "Dế Mèn Phiêu Lưu Ký", "Tô Hoài", "https://thegioicotich.vn/wp-content/uploads/2019/09/de-men-phieu-luu-ky-chuong-4-cua-nha-van-to-hoai.png", 4.8),
         EbookData("e6", "Số Đỏ", "Vũ Trọng Phụng", "https://product.hstatic.net/200000017360/product/bia_sodo3-b1_b32d805ef78846fab8d0d6c1c7fc887b_master.jpg", 4.7),
         EbookData("e7", "Tắt Đèn", "Ngô Tất Tố", "https://dilib.vn/img/news/2022/11/larger/7820-tat-den-1.jpg?v=1370", 4.6),
     )
@@ -113,19 +114,19 @@ object SampleData {
 
     data class KidStory(
         val title: String,
-        val imageUrl: String,
+        val imageUrl: Any,
         val duration: String
     )
 
     val kidsStories = listOf(
-        KidStory("Thần mộng mơ", "https://bookhunterlyceum.org/wp-content/uploads/2024/03/84.png", "16 phút"),
-        KidStory("Người cung trăng", "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1344266319i/10434440.jpg", "19 phút"),
-        KidStory("Câu lạc bộ Phiêu lưu", "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1500647871l/35720456._SY475_.jpg", "32 phút"),
-        KidStory("Những bức thư của Họa My", "https://picsum.photos/300/300", "29 phút"),
-        KidStory("Hành trình về phương Đông", "https://picsum.photos/301/301", "45 phút"),
-        KidStory("Khu vườn bí mật", "https://picsum.photos/302/302", "12 phút"),
-        KidStory("Hoàng tử bé", "https://picsum.photos/303/303", "50 phút"),
-        KidStory("Dế mèn phiêu lưu ký", "https://picsum.photos/304/304", "40 phút")
+        KidStory("Thần mộng mơ", "https://salt.tikicdn.com/cache/750x750/ts/product/5d/63/6a/35eafcb4ac833df01c59d2c08dc6ff51.jpg.webp", "16 phút"),
+        KidStory("Người cung trăng", "https://salt.tikicdn.com/cache/750x750/ts/product/17/ce/ce/819b023eebd62f62eb927f9e0e4fea44.jpg.webp", "19 phút"),
+        KidStory("Câu lạc bộ Phiêu lưu",R.drawable.fantasy_image , "32 phút"),
+        KidStory("Những bức thư của Họa My", R.drawable.hoamy, "29 phút"),
+        KidStory("Thăm nhà ông Mặt Trời", R.drawable.mattroi, "32 phút"),
+        KidStory("Ngôi trường kỳ lạ", R.drawable.myteriousschool, "29 phút"),
+        KidStory("Mẹ yêu con", R.drawable.mom, "31 phút"),
+        KidStory("Bạn cún đi lạc", R.drawable.dog, "29 phút")
     )
 }
 

@@ -27,13 +27,14 @@ import com.kienvo.fonosclone.screens.AudioPlayerScreen
 import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.AuthScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
-import com.kienvo.fonosclone.screens.FonosHomeScreen
+import com.kienvo.fonosclone.screens.HomeScreen
 import com.kienvo.fonosclone.screens.PersonalScreen
 import com.kienvo.fonosclone.screens.PlaceholderScreen
 import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
 import com.kienvo.fonosclone.screens.EbookScreen
 import com.kienvo.fonosclone.screens.KidsScreen
+import com.kienvo.fonosclone.screens.SelfHelpScreen
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -179,7 +180,7 @@ fun AppNavigation(navController: NavHostController) {
                 }
             ) {
                 composable("home") {
-                    FonosHomeScreen(
+                    HomeScreen(
                         navController = navController,
                         sharedTransitionScope = this@SharedTransitionLayout,
                         animatedVisibilityScope = this
@@ -213,6 +214,7 @@ fun AppNavigation(navController: NavHostController) {
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
                 composable(Screen.Ebook.route) { EbookScreen(navController) }
                 composable(Screen.Kids.route) { KidsScreen(navController) }
+                composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
                 composable("personal") { PersonalScreen(navController) }
 
                 // --- MÀN HÌNH PHÁT AUDIO ---
