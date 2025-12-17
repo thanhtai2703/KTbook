@@ -62,6 +62,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.rosach.R
 import com.kienvo.fonosclone.navigation.Screen
+import com.kienvo.fonosclone.data.SampleData
 
 // Model
 data class CategoryItemData(
@@ -79,46 +80,59 @@ fun SearchScreen(navController: NavController) {
     val bodyColor = Color(0xFF1B1C20)
 
     // Dữ liệu mẫu (Giữ nguyên)
+    // Use centralized SampleData for images/URLs so it's easier to manage
     val categories = listOf(
         CategoryItemData(
-            "Sách nói", Color(0xFF5D4037), Color(0xFF8D6E63),
+            "Sách nói",
+            Color(0xFF6D4C41), Color(0xFF8D6E63),
             Icons.Default.Headphones,
-            "https://images-na.ssl-images-amazon.com/images/I/811PTyrckTL.jpg"
+            // pick a representative audiobook cover from SampleData
+            SampleData.audioBooks.getOrNull(2)?.coverUrl ?: SampleData.audioBooks.first().coverUrl
         ),
         CategoryItemData(
-            "PodCourse", Color(0xFF263238), Color(0xFF546E7A),
+            "Self-Help",
+            Color(0xFF37474F), Color(0xFF546E7A),
             Icons.Default.VideoLibrary,
-            "https://cdn-icons-png.flaticon.com/512/3163/3163473.png"
+            // use a healing/popular book for self-help visuals
+            SampleData.healingBooks.getOrNull(1)?.coverUrl ?: SampleData.healingBooks.first().coverUrl
         ),
         CategoryItemData(
-            "Ebook", Color(0xFF1B5E20), Color(0xFF43A047),
+            "Ebook",
+            Color(0xFF0D47A1), Color(0xFF1976D2),
             Icons.AutoMirrored.Filled.MenuBook,
-            "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/motthoangtarucroonhangian011.jpg?v=1705552591463"
+            SampleData.topEbooks.getOrNull(0)?.coverUrl ?: SampleData.topEbooks.first().coverUrl
         ),
         CategoryItemData(
-            "Tóm Tắt\n Sách", Color(0xFFE65100), Color(0xFFFFA000),
+            "Trinh thám",
+            Color(0xFFBF360C), Color(0xFFFF8A65),
             Icons.Default.Book,
-            "https://cdn.hstatic.net/products/200000900535/doc_vi_bat_ky_ai_de_khong_bi_loi_dung_-bia_1__tb_2025__899034494358448295b41a80dc16019e.jpg"
+            SampleData.detectiveBooks.getOrNull(0)?.coverUrl ?: SampleData.detectiveBooks.first().coverUrl
         ),
         CategoryItemData(
-            "Thiếu nhi", Color(0xFFB71C1C), Color(0xFFE57373),
+            "Thiếu nhi",
+            Color(0xFFD81B60), Color(0xFFF48FB1),
             Icons.Default.ChildCare,
-            R.drawable.kids_image
+            // kidsStories uses Any (String or drawable)
+            SampleData.kidsStories.getOrNull(0)?.imageUrl ?: R.drawable.kids_image
         ),
         CategoryItemData(
-            "Thiền", Color(0xFF004D40), Color(0xFF009688),
+            "Tôn giáo",
+            Color(0xFF004D40), Color(0xFF00796B),
             Icons.Default.SelfImprovement,
-            R.drawable.meditation_image
+            // pick the Kinh Thánh entry from audioBooks (index 5)
+            SampleData.audioBooks.getOrNull(5)?.coverUrl ?: SampleData.audioBooks.first().coverUrl
         ),
         CategoryItemData(
-            "Truyện ngủ\n& Nhạc", Color(0xFF311B92), Color(0xFF673AB7),
+            "Thiên văn",
+            Color(0xFF283593), Color(0xFF5E35B1),
             Icons.Default.Nightlight,
             R.drawable.bedtime_story_image
         ),
         CategoryItemData(
-            "Podcast", Color(0xFF33691E), Color(0xFF689F38),
+            "Healing",
+            Color(0xFF2E7D32), Color(0xFF66BB6A),
             Icons.Default.Mic,
-            "https://cdn-icons-png.flaticon.com/512/2368/2368447.png"
+            SampleData.healingBooks.getOrNull(0)?.coverUrl ?: SampleData.healingBooks.first().coverUrl
         )
     )
 
@@ -211,6 +225,9 @@ fun SearchScreen(navController: NavController) {
                                             launchSingleTop = true
                                             restoreState = true
                                         }
+                                    }
+                                    "Self-Help" -> {
+                                        navController.navigate(Screen.SelfHelp.route)
                                     }
                                     "Ebook" -> {
                                         navController.navigate(Screen.Ebook.route) {
