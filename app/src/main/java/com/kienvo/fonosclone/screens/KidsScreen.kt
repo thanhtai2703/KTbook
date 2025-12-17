@@ -1,106 +1,87 @@
 package com.kienvo.fonosclone.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.kienvo.fonosclone.data.SampleData
-import com.kienvo.fonosclone.ui.theme.AppColors
 import com.kienvo.fonosclone.widgets.kids.KidsStoryCard
+import com.example.rosach.R
 
 @Composable
 fun KidsScreen(navController: NavController) {
-    // Gradient Hồng cam -> Xanh ngọc -> Xanh lá
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            AppColors.KidsGradientPink,
-            AppColors.KidsGradientPinkLight,
-            AppColors.KidsGradientCyan,
-            AppColors.KidsGradientGreen
-        )
-    )
-
-    // Lấy dữ liệu từ SampleData
     val stories = SampleData.kidsStories
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundBrush)
-    ) {
-        // Họa tiết ngôi sao
-        Icon(
-            imageVector = Icons.Default.Star,
+    Box(modifier = Modifier.fillMaxSize()) {
+        // [LỚP 1] BACKGROUND IMAGE (Giữ nguyên)
+        Image(
+            painter = painterResource(id = R.drawable.kids_background_image),
             contentDescription = null,
-            tint = Color.White.copy(alpha = 0.15f),
-            modifier = Modifier
-                .size(280.dp)
-                .align(Alignment.TopEnd)
-                .offset(x = 60.dp, y = (-40).dp)
-        )
-        Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.1f),
-            modifier = Modifier
-                .size(150.dp)
-                .align(Alignment.TopStart)
-                .offset(x = (-40).dp, y = 120.dp)
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
+        // [LỚP 2] BỐ CỤC CHIA CẮT
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
         ) {
-            // HEADER CỐ ĐỊNH
+            // --- PHẦN 1: COMPACT HEADER (Cố định & Nhỏ gọn) ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp), // Khoảng cách nhỏ với nội dung bên dưới
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Nút Back
+                // Hàng chứa nút Back
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(38.dp) // [THU NHỎ] Giảm chiều cao từ 56dp -> 48dp
                 ) {
                     IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.align(Alignment.CenterStart)
                     ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp) // [THU NHỎ] Icon nhỏ lại chút
+                        )
                     }
                 }
 
-                // Tiêu đề
+                // Tiêu đề chính
                 Text(
                     text = "Truyện thiếu nhi",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp
+                    fontSize = 24.sp, // [THU NHỎ] Giảm font từ 28sp -> 24sp cho gọn
+                    modifier = Modifier.padding(bottom = 4.dp) // Sát lề dưới hơn
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+
+                // Đã XÓA Subtitle ở đây
             }
 
-            // GRID CUỘN
+            // --- PHẦN 2: CONTENT CUỘN ---
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -108,31 +89,33 @@ fun KidsScreen(navController: NavController) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f) // Chiếm toàn bộ phần còn lại
             ) {
+                // [MỚI] ITEM 1: Subtitle (Đưa xuống đây để cuộn theo danh sách)
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Những câu chuyện đẹp và hay cho bé",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                    Text(
+                        text = "Những câu chuyện đẹp và hay cho bé",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp) // Cách xa phần danh sách bên dưới
+                    )
                 }
 
-                // Tiêu đề section
+                // ITEM 2: Tiêu đề Section
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         "Tất cả truyện thiếu nhi",
                         color = Color.White,
-                        fontSize = 20.sp,
+                        fontSize = 18.sp, // Giảm nhẹ font section cho cân đối
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
+                // ITEM 3: Danh sách truyện
                 items(stories) { story ->
                     KidsStoryCard(story)
                 }
