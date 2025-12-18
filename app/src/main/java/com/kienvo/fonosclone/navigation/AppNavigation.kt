@@ -34,8 +34,7 @@ import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
 import com.kienvo.fonosclone.screens.EbookScreen
 import com.kienvo.fonosclone.screens.KidsScreen
-import com.kienvo.fonosclone.viewmodel.AuthViewModel
-import com.kienvo.fonosclone.viewmodel.UserViewModel
+import com.kienvo.fonosclone.screens.SelfHelpScreen
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
