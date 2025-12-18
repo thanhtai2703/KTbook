@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,11 +82,22 @@ fun FonosHomeScreen(
 
     // Firebase Authentication - Kiểm tra trạng thái đăng nhập thực tế
     val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
+    // Observe auth state so UI updates when user signs in/out
+    var currentUser by remember { mutableStateOf(auth.currentUser) }
     var isLoggedIn by remember { mutableStateOf(currentUser != null) }
+    // derived properties that update when currentUser changes
     val userAvatarUrl = currentUser?.photoUrl?.toString()
         ?: "https://icons.veryicon.com/png/o/miscellaneous/common-icons-31/default-avatar-2.png"
-    val userEmail = currentUser?.email ?: ""
+
+    // Register an AuthStateListener so Compose updates when auth state changes
+    DisposableEffect(auth) {
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            currentUser = firebaseAuth.currentUser
+            isLoggedIn = currentUser != null
+        }
+        auth.addAuthStateListener(listener)
+        onDispose { auth.removeAuthStateListener(listener) }
+    }
 
     val topBarGradient = Brush.verticalGradient(
         colors = listOf(
@@ -159,10 +171,11 @@ fun FonosHomeScreen(
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.2f))
                                 .clickable {
-                                    // Click vào avatar để test đăng xuất
+                                    // Nếu đã login -> mở trang profile, nếu chưa -> chuyển đến auth
                                     if (isLoggedIn) {
-                                        auth.signOut()
-                                        isLoggedIn = false
+                                        navController?.navigate("profile")
+                                    } else {
+                                        navController?.navigate("auth")
                                     }
                                 },
                             contentAlignment = Alignment.Center

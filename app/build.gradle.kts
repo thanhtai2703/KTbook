@@ -62,6 +62,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-auth-ktx:23.0.0")  // Firebase Authentication
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")  // Firebase Firestore
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

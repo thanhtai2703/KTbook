@@ -4,364 +4,338 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.kienvo.fonosclone.ui.theme.DarkBg
-import com.kienvo.fonosclone.ui.theme.PaleYellow
-import com.kienvo.fonosclone.ui.theme.PaleYellowDark
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import com.kienvo.fonosclone.ui.theme.Yellow
+import com.kienvo.fonosclone.viewmodel.AuthState
+import com.kienvo.fonosclone.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(navController: NavController) {
+fun AuthScreen(
+    navController: NavController? = null,
+    authViewModel: AuthViewModel
+) {
     var isLoginMode by remember { mutableStateOf(true) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    
-    val auth = FirebaseAuth.getInstance()
-    val scope = rememberCoroutineScope()
-    val focusManager = LocalFocusManager.current
-    
-    val buttonGradient = Brush.horizontalGradient(
-        colors = listOf(PaleYellowDark, PaleYellow)
-    )
-    
-    Scaffold(
-        containerColor = DarkBg,
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = if (isLoginMode) "Đăng Nhập" else "Đăng Ký",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Quay lại",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBg
-                )
-            )
+
+    val authState by authViewModel.authState.collectAsState()
+
+    // Navigate when authenticated
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
+            navController?.navigate("home") {
+                popUpTo("auth") { inclusive = true }
+            }
         }
-    ) { paddingValues ->
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBg)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo hoặc tiêu đề app
-            Text(
-                text = "Rổ Sách",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = PaleYellow
+            // Logo/Title
+            Icon(
+                imageVector = Icons.Default.Book,
+                contentDescription = null,
+                tint = Yellow,
+                modifier = Modifier.size(80.dp)
             )
-            
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Audio Book Application",
-                fontSize = 16.sp,
+                text = "RoSach",
+                color = Color.White,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = if (isLoginMode) "Đăng nhập vào tài khoản" else "Tạo tài khoản mới",
                 color = Color.Gray,
-                modifier = Modifier.padding(bottom = 48.dp)
+                fontSize = 16.sp
             )
-            
-            // Email Field
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Username field (only for register)
+            if (!isLoginMode) {
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Tên hiển thị") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Person, contentDescription = null)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Yellow,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Yellow,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Yellow,
+                        focusedLeadingIconColor = Yellow,
+                        unfocusedLeadingIconColor = Color.Gray
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Email field
             OutlinedTextField(
                 value = email,
-                onValueChange = { 
-                    email = it
-                    errorMessage = null
-                },
+                onValueChange = { email = it },
                 label = { Text("Email") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        tint = PaleYellow
-                    )
+                    Icon(Icons.Default.Email, contentDescription = null)
                 },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PaleYellow,
+                    focusedBorderColor = Yellow,
                     unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = PaleYellow,
+                    focusedLabelColor = Yellow,
                     unfocusedLabelColor = Color.Gray,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    cursorColor = PaleYellow
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    cursorColor = Yellow,
+                    focusedLeadingIconColor = Yellow,
+                    unfocusedLeadingIconColor = Color.Gray
+                )
             )
-            
-            // Password Field
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password field
             OutlinedTextField(
                 value = password,
-                onValueChange = { 
-                    password = it
-                    errorMessage = null
-                },
+                onValueChange = { password = it },
                 label = { Text("Mật khẩu") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = PaleYellow
-                    )
+                    Icon(Icons.Default.Lock, contentDescription = null)
                 },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = if (passwordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu",
-                            tint = Color.Gray
+                            tint = if (passwordVisible) Yellow else Color.Gray
                         )
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = if (isLoginMode) ImeAction.Done else ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (isLoginMode) {
-                            focusManager.clearFocus()
-                        }
-                    },
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PaleYellow,
+                    focusedBorderColor = Yellow,
                     unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = PaleYellow,
+                    focusedLabelColor = Yellow,
                     unfocusedLabelColor = Color.Gray,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    cursorColor = PaleYellow
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    cursorColor = Yellow,
+                    focusedLeadingIconColor = Yellow,
+                    unfocusedLeadingIconColor = Color.Gray
+                )
             )
 
-            // Confirm Password Field (chỉ hiện khi đăng ký)
+            // Confirm password field (only for register)
             if (!isLoginMode) {
+                Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it
-                        errorMessage = null
-                    },
+                    onValueChange = { confirmPassword = it },
                     label = { Text("Xác nhận mật khẩu") },
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = PaleYellow
-                        )
+                        Icon(Icons.Default.Lock, contentDescription = null)
                     },
-                    trailingIcon = {
-                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                            Icon(
-                                imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (confirmPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu",
-                                tint = Color.Gray
-                            )
-                        }
-                    },
-                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }
-                    ),
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PaleYellow,
+                        focusedBorderColor = Yellow,
                         unfocusedBorderColor = Color.Gray,
-                        focusedLabelColor = PaleYellow,
+                        focusedLabelColor = Yellow,
                         unfocusedLabelColor = Color.Gray,
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
-                        cursorColor = PaleYellow
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        cursorColor = Yellow,
+                        focusedLeadingIconColor = Yellow,
+                        unfocusedLeadingIconColor = Color.Gray
+                    )
                 )
-            }
-
-            // Error Message
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage!!,
-                    color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
-
-            // Login/Register Button
-            Button(
-                onClick = {
-                    scope.launch {
-                        // Validation
-                        if (email.isBlank() || password.isBlank()) {
-                            errorMessage = "Vui lòng điền đầy đủ thông tin"
-                            return@launch
-                        }
-
-                        if (!isLoginMode && password != confirmPassword) {
-                            errorMessage = "Mật khẩu xác nhận không khớp"
-                            return@launch
-                        }
-
-                        if (password.length < 6) {
-                            errorMessage = "Mật khẩu phải có ít nhất 6 ký tự"
-                            return@launch
-                        }
-
-                        isLoading = true
-                        errorMessage = null
-
-                        try {
-                            if (isLoginMode) {
-                                // Đăng nhập
-                                auth.signInWithEmailAndPassword(email, password).await()
-                                // Quay lại màn hình trước đó
-                                navController.popBackStack()
-                            } else {
-                                // Đăng ký
-                                auth.createUserWithEmailAndPassword(email, password).await()
-                                // Quay lại màn hình trước đó
-                                navController.popBackStack()
-                            }
-                        } catch (e: Exception) {
-                            errorMessage = when {
-                                e.message?.contains("email") == true -> "Email không hợp lệ"
-                                e.message?.contains("password") == true -> "Mật khẩu không đúng"
-                                e.message?.contains("user") == true -> "Tài khoản không tồn tại"
-                                e.message?.contains("already") == true -> "Email đã được sử dụng"
-                                else -> "Đã xảy ra lỗi: ${e.message}"
-                            }
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues(0.dp),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(brush = buttonGradient),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    } else {
-                        Text(
-                            text = if (isLoginMode) "Đăng Nhập" else "Đăng Ký",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Toggle between Login and Register
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            // Error message
+            if (authState is AuthState.Error) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.Red.copy(alpha = 0.2f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = Color.Red
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = (authState as AuthState.Error).message,
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Login/Register button
+            Button(
+                onClick = {
+                    if (isLoginMode) {
+                        if (email.isNotEmpty() && password.isNotEmpty()) {
+                            authViewModel.loginWithEmail(email, password)
+                        }
+                    } else {
+                        if (email.isNotEmpty() && password.isNotEmpty() &&
+                            username.isNotEmpty() && password == confirmPassword) {
+                            authViewModel.registerWithEmail(email, password, username)
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Yellow
+                ),
+                shape = RoundedCornerShape(12.dp),
+                enabled = authState !is AuthState.Loading
+            ) {
+                if (authState is AuthState.Loading) {
+                    CircularProgressIndicator(
+                        color = Color.Black,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = if (isLoginMode) "Đăng nhập" else "Đăng ký",
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Toggle between login and register
+            TextButton(
+                onClick = {
+                    isLoginMode = !isLoginMode
+                    authViewModel.clearError()
+                }
             ) {
                 Text(
-                    text = if (isLoginMode) "Chưa có tài khoản?" else "Đã có tài khoản?",
-                    color = Color.Gray,
+                    text = if (isLoginMode) "Chưa có tài khoản? Đăng ký ngay" else "Đã có tài khoản? Đăng nhập",
+                    color = Yellow,
                     fontSize = 14.sp
                 )
+            }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
+            if (isLoginMode) {
                 TextButton(
-                    onClick = {
-                        isLoginMode = !isLoginMode
-                        errorMessage = null
-                    }
+                    onClick = { /* Handle forgot password */ }
                 ) {
                     Text(
-                        text = if (isLoginMode) "Đăng ký ngay" else "Đăng nhập",
-                        color = PaleYellow,
-                        fontWeight = FontWeight.Bold,
+                        text = "Quên mật khẩu?",
+                        color = Color.Gray,
                         fontSize = 14.sp
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Divider
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = Color.Gray
+                )
+                Text(
+                    text = "  hoặc  ",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Social login buttons
+            OutlinedButton(
+                onClick = { /* Handle Google login */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Đăng nhập với Google", fontSize = 16.sp)
+            }
         }
     }
 }
-
