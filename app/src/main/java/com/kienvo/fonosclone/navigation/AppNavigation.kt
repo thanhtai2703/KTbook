@@ -25,6 +25,7 @@ import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
 import com.kienvo.fonosclone.screens.AudioPlayerScreen
 import com.kienvo.fonosclone.screens.AuthScreen
+import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
 import com.kienvo.fonosclone.screens.FonosHomeScreen
 import com.kienvo.fonosclone.screens.PersonalScreen
@@ -33,6 +34,8 @@ import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
 import com.kienvo.fonosclone.screens.EbookScreen
 import com.kienvo.fonosclone.screens.KidsScreen
+import com.kienvo.fonosclone.viewmodel.AuthViewModel
+import com.kienvo.fonosclone.viewmodel.UserViewModel
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -43,7 +46,11 @@ private fun getTabIndex(route: String?): Int {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AppNavigation(navController: NavHostController) {
+fun AppNavigation(
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    userViewModel: UserViewModel
+) {
     // Tăng thời gian lên 400-500ms và thêm Easing để lướt mượt hơn
     val animDuration = 400
     val slideSpec = tween<IntOffset>(durationMillis = animDuration, easing = FastOutSlowInEasing)
@@ -186,7 +193,10 @@ fun AppNavigation(navController: NavHostController) {
                 }
 
                 composable("auth") {
-                    AuthScreen(navController = navController)
+                    AuthScreen(
+                        navController = navController,
+                        authViewModel = authViewModel
+                    )
                 }
 
                 composable("search") { SearchScreen(navController) }
@@ -212,7 +222,20 @@ fun AppNavigation(navController: NavHostController) {
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
                 composable(Screen.Ebook.route) { EbookScreen(navController) }
                 composable(Screen.Kids.route) { KidsScreen(navController) }
-                composable("personal") { PersonalScreen(navController) }
+                composable("personal") {
+                    PersonalScreen(
+                        navController = navController,
+                        userViewModel = userViewModel
+                    )
+                }
+
+                // Also expose profile route so avatar -> navigate("profile") works
+                composable("profile") {
+                    PersonalScreen(
+                        navController = navController,
+                        userViewModel = userViewModel
+                    )
+                }
 
                 // --- MÀN HÌNH PHÁT AUDIO ---
                 composable(
