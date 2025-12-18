@@ -11,6 +11,7 @@
             </PendingDiffInfo>
           </value>
         </entry>
+<<<<<<< HEAD
         <entry key="$PROJECT_DIR$/PROJECT_STRUCTURE.md">
           <value>
             <PendingDiffInfo>
@@ -19,6 +20,8 @@
             </PendingDiffInfo>
           </value>
         </entry>
+=======
+>>>>>>> 1a36c8268ec42d4dd8524b3650d55ef377cced33
       </map>
     </option>
   </component>

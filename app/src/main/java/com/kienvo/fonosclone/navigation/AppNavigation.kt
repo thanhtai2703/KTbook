@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.fonosclone.screens.ActiveSearchScreen
 import com.kienvo.fonosclone.screens.AudioPlayerScreen
+import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.AuthScreen
 import com.kienvo.fonosclone.screens.BigBannerDetailScreen
 import com.kienvo.fonosclone.screens.BookDetailScreen
@@ -34,6 +35,7 @@ import com.kienvo.fonosclone.screens.SearchScreen
 import com.kienvo.fonosclone.widgets.BottomBar
 import com.kienvo.fonosclone.screens.EbookScreen
 import com.kienvo.fonosclone.screens.KidsScreen
+import com.kienvo.fonosclone.screens.SelfHelpScreen
 import com.kienvo.fonosclone.viewmodel.AuthViewModel
 import com.kienvo.fonosclone.viewmodel.UserViewModel
 
