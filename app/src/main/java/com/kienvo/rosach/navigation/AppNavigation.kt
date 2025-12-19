@@ -28,28 +28,17 @@ import com.kienvo.rosach.screens.AudioPlayerScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
-import com.kienvo.rosach.screens.FonosHomeScreen
 import com.kienvo.rosach.screens.PersonalScreen
 import com.kienvo.rosach.screens.PlaceholderScreen
 import com.kienvo.rosach.screens.SearchScreen
 import com.kienvo.rosach.widgets.BottomBar
 import com.kienvo.rosach.screens.EbookScreen
+import com.kienvo.rosach.screens.HomeScreen
 import com.kienvo.rosach.screens.KidsScreen
+import com.kienvo.rosach.screens.SelfHelpScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
-import com.kienvo.fonosclone.screens.ActiveSearchScreen
-import com.kienvo.fonosclone.screens.AudioPlayerScreen
-import com.kienvo.fonosclone.screens.BigBannerDetailScreen
-import com.kienvo.fonosclone.screens.AuthScreen
-import com.kienvo.fonosclone.screens.BookDetailScreen
-import com.kienvo.fonosclone.screens.HomeScreen
-import com.kienvo.fonosclone.screens.PersonalScreen
-import com.kienvo.fonosclone.screens.PlaceholderScreen
-import com.kienvo.fonosclone.screens.SearchScreen
-import com.kienvo.fonosclone.widgets.BottomBar
-import com.kienvo.fonosclone.screens.EbookScreen
-import com.kienvo.fonosclone.screens.KidsScreen
-import com.kienvo.fonosclone.screens.SelfHelpScreen
+
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
