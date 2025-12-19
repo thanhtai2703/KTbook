@@ -28,15 +28,17 @@ import com.kienvo.rosach.screens.AudioPlayerScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
-import com.kienvo.rosach.screens.FonosHomeScreen
 import com.kienvo.rosach.screens.PersonalScreen
 import com.kienvo.rosach.screens.PlaceholderScreen
 import com.kienvo.rosach.screens.SearchScreen
 import com.kienvo.rosach.widgets.BottomBar
 import com.kienvo.rosach.screens.EbookScreen
+import com.kienvo.rosach.screens.HomeScreen
 import com.kienvo.rosach.screens.KidsScreen
+import com.kienvo.rosach.screens.SelfHelpScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
+
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -186,7 +188,7 @@ fun AppNavigation(
                 }
             ) {
                 composable("home") {
-                    FonosHomeScreen(
+                    HomeScreen(
                         navController = navController,
                         sharedTransitionScope = this@SharedTransitionLayout,
                         animatedVisibilityScope = this
@@ -223,6 +225,8 @@ fun AppNavigation(
                 composable("library") { PlaceholderScreen("Thư viện", navController) }
                 composable(Screen.Ebook.route) { EbookScreen(navController) }
                 composable(Screen.Kids.route) { KidsScreen(navController) }
+                composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
+                composable("personal") { PersonalScreen(navController) }
                 composable("personal") {
                     PersonalScreen(
                         navController = navController,
