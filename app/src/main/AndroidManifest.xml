@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RoSach">
         <activity
-            android:name="com.kienvo.fonosclone.MainActivity"
+            android:name="com.kienvo.rosach.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.RoSach"
