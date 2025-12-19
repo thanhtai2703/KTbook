@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,11 +56,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.Yellow
+import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.widgets.ActionCircleButton
 import com.kienvo.rosach.widgets.AmbienceBottomSheet
 import com.kienvo.rosach.widgets.BookStatItem
@@ -75,33 +79,33 @@ fun BookDetailScreen(
     navController: NavController,
     bookId: String?,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    bookViewModel: BookViewModel = viewModel()
 ) {
-    // Kiểm tra nếu đây là sách "Đắc Nhân Tâm"
-    val isDacNhanTam = bookId == "2"
+    // Load book data from Firestore
+    var book by remember { mutableStateOf<Book?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    // Dữ liệu sách thay đổi theo bookId
-    val bookTitle = if (isDacNhanTam) "Đắc Nhân Tâm" else "Muôn Kiếp Nhân Sinh"
-    val bookAuthor = if (isDacNhanTam) "Dale Carnegie" else "Nguyên Phong"
-    val bookCover = if (isDacNhanTam)
-        "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg"
-        else "https://product.hstatic.net/200000122283/product/bia1-muonkiepnhansinh3-01_d1a246c6abfd4621bed63b8ca3b73ba9_master.jpg"
-    val bookDesc = if (isDacNhanTam)
-        "Cuốn sách kinh điển về nghệ thuật giao tiếp và ứng xử. Dale Carnegie chia sẻ những nguyên tắc vàng trong việc xây dựng mối quan hệ, ảnh hưởng tích cực đến người khác và đạt được thành công trong cuộc sống."
-        else "Một cuốn sách thức tỉnh về luật nhân quả, luân hồi và vị thế của con người trong vũ trụ..."
+    LaunchedEffect(bookId) {
+        if (bookId != null) {
+            isLoading = true
+            book = bookViewModel.getBookById(bookId)
+            isLoading = false
+        }
+    }
 
-    val chapters = if (isDacNhanTam) listOf(
-        "Phần 1: Những kỹ thuật cơ bản trong việc ứng xử với con người",
-        "Phần 2: Sáu cách để được người khác yêu thích",
-        "Phần 3: Làm thế nào để thuyết phục được người khác",
-        "Phần 4: Trở thành một nhà lãnh đạo"
-    ) else listOf(
-        "Chương 1: Cuộc gặp gỡ định mệnh tại New York",
-        "Chương 2: Những bí ẩn của tiền kiếp",
-        "Chương 3: Luật Nhân Quả vận hành thế nào?",
-        "Chương 4: Bài học từ nền văn minh Atlantis",
-        "Chương 5: Sự thức tỉnh tâm linh",
-        "Chương 6: Lời kết và thông điệp"
+    // Dữ liệu sách từ Firestore (fallback nếu không load được)
+    val bookTitle = book?.title ?: "Đang tải..."
+    val bookAuthor = book?.author ?: ""
+    val bookCover = book?.coverUrl ?: ""
+    val bookDesc = "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
+
+    // Hardcode chapters tạm thời (sau này sẽ load từ Firestore parts)
+    val chapters = listOf(
+        "Chương 1: Mở đầu",
+        "Chương 2: Phát triển",
+        "Chương 3: Cao trào",
+        "Chương 4: Kết thúc"
     )
 
     // --- STATE ---
@@ -134,158 +138,169 @@ fun BookDetailScreen(
 
         Box(modifier = Modifier.fillMaxSize()) {
             // LAYER 1: BACKGROUND MỜ
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(radius = 60.dp)
-                    .background(Color.Black.copy(alpha = 0.4f))
-            )
+            if (bookCover.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(radius = 60.dp)
+                        .background(Color.Black.copy(alpha = 0.4f))
+                )
+            }
+
+            // Show loading
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(color = Yellow)
+                }
+            }
 
             // LAYER 2: NỘI DUNG CHÍNH SCROLL
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // --- TOP SECTION: BÌA SÁCH & ACTION ---
-                with(sharedTransitionScope) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
-                        contentDescription = "Book Cover",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = "image-$bookId"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = bookTitle,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Tác giả: $bookAuthor",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.LightGray,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // CỤM NÚT ACTION
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ActionCircleButton(icon = Icons.Default.FavoriteBorder)
-                    Spacer(modifier = Modifier.width(24.dp))
-                    Button(
-                        onClick = {
-                            // Chỉ navigate đến AudioPlayerScreen nếu là sách "Đắc Nhân Tâm"
-                            if (isDacNhanTam) {
-                                navController.navigate("audio_player/$bookId")
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Yellow),
-                        shape = RoundedCornerShape(50),
-                        modifier = Modifier
-                            .height(56.dp)
-                            .width(180.dp)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Phát Ngay", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    }
-                    Spacer(modifier = Modifier.width(24.dp))
-                    ActionCircleButton(icon = Icons.Default.Tune) { showBottomSheet = true }
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // --- INFO SHEET (PHẦN BO TRÒN) ---
+            if (!isLoading && book != null) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                        .background(Color(0xFF181818))
-                        .padding(24.dp)
+                        .fillMaxSize()
+                        .padding(top = paddingValues.calculateTopPadding())
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Thanh nắm (Handle)
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Color.DarkGray)
-                            .align(Alignment.CenterHorizontally)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // 1. THỐNG KÊ (Icon Row)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        BookStatItem(Icons.Default.AccessTime, if (isDacNhanTam) "8h 30p" else "12h 45p", "Thời lượng")
-                        BookStatItem(Icons.Default.Category, if (isDacNhanTam) "Kỹ năng sống" else "Tâm linh", "Thể loại")
+                    // --- TOP SECTION: BÌA SÁCH & ACTION ---
+                    with(sharedTransitionScope) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
+                            contentDescription = "Book Cover",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(300.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                                .sharedElement(
+                                    sharedContentState = rememberSharedContentState(key = "image-$bookId"),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    MyDivider()
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 3. THÔNG TIN THÊM
-                    InfoRow(label = "Giọng đọc", value = if (isDacNhanTam) "Minh Châu" else "Kiên Cặc Bự")
-                    Spacer(modifier = Modifier.height(12.dp))
-                    InfoRow(label = "Nhà xuất bản", value = if (isDacNhanTam) "NXB Tổng Hợp TPHCM" else "First News - Trí Việt")
-                    Spacer(modifier = Modifier.height(12.dp))
-                    InfoRow(label = "Phát hành", value = "15/08/2024")
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                    MyDivider()
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 4. GIỚI THIỆU
-                    SectionTitle(title = "Giới thiệu")
                     Text(
-                        text = bookDesc,
+                        text = bookTitle,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tác giả: $bookAuthor",
+                        style = MaterialTheme.typography.titleMedium,
                         color = Color.LightGray,
-                        lineHeight = 24.sp,
-                        fontSize = 15.sp,
-                        textAlign = TextAlign.Justify
+                        textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
-                    MyDivider()
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // 5. DANH SÁCH CHƯƠNG
-                    SectionTitle(title = "Danh sách chương")
-                    chapters.forEachIndexed { index, chapterName ->
-                        ChapterItem(index = index + 1, name = chapterName)
+                    // CỤM NÚT ACTION
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ActionCircleButton(icon = Icons.Default.FavoriteBorder)
+                        Spacer(modifier = Modifier.width(24.dp))
+                        Button(
+                            onClick = {
+                                navController.navigate("audio_player/$bookId")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Yellow),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier
+                                .height(56.dp)
+                                .width(180.dp)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Phát Ngay", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        }
+                        Spacer(modifier = Modifier.width(24.dp))
+                        ActionCircleButton(icon = Icons.Default.Tune) { showBottomSheet = true }
                     }
 
-                    Spacer(modifier = Modifier.height(100.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // --- INFO SHEET (PHẦN BO TRÒN) ---
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                            .background(Color(0xFF181818))
+                            .padding(24.dp)
+                    ) {
+                        // Thanh nắm (Handle)
+                        Box(
+                            modifier = Modifier
+                                .width(40.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color.DarkGray)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // 1. THỐNG KÊ (Icon Row)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            BookStatItem(Icons.Default.AccessTime, "Đang cập nhật", "Thời lượng")
+                            BookStatItem(Icons.Default.Category, "Audiobook", "Thể loại")
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        MyDivider()
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // 3. THÔNG TIN THÊM
+                        InfoRow(label = "Giọng đọc", value = "Đang cập nhật")
+                        Spacer(modifier = Modifier.height(12.dp))
+                        InfoRow(label = "Nhà xuất bản", value = "Đang cập nhật")
+                        Spacer(modifier = Modifier.height(12.dp))
+                        InfoRow(label = "Đánh giá", value = "${book?.rating ?: 0.0} ⭐")
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        MyDivider()
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // 4. GIỚI THIỆU
+                        SectionTitle(title = "Giới thiệu")
+                        Text(
+                            text = bookDesc,
+                            color = Color.LightGray,
+                            lineHeight = 24.sp,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Justify
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        MyDivider()
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // 5. DANH SÁCH CHƯƠNG
+                        SectionTitle(title = "Danh sách chương")
+                        chapters.forEachIndexed { index, chapterName ->
+                            ChapterItem(index = index + 1, name = chapterName)
+                        }
+
+                        Spacer(modifier = Modifier.height(100.dp))
+                    }
                 }
             }
 

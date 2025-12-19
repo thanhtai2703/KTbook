@@ -101,7 +101,9 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "bookId" to bookId,
                 "partNumber" to i,
                 "title" to "Phần $i",
-                "audioUrl" to "https://example.com/audio/${bookId}_part_$i.mp3",
+                // Sử dụng URL audio thật từ Firebase Storage
+                // Ví dụ: "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/..."
+                "audioUrl" to getAudioUrlForBook(bookId, i),
                 "duration" to "${(20..60).random()}:${(10..59).random()}",
                 "durationSeconds" to (1200..3600).random(),
                 "fileSize" to "${(10..30).random()} MB",
@@ -114,6 +116,19 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
             db.collection("books").document(bookId)
                 .collection("parts").document("${bookId}_part_$i")
                 .set(partData).await()
+        }
+    }
+
+    /**
+     * Lấy URL audio cho book và part cụ thể
+     * TODO: Thay bằng URL thực từ Firebase Storage của bạn
+     */
+    private fun getAudioUrlForBook(bookId: String, partNumber: Int): String {
+        // Ví dụ URL của Đắc Nhân Tâm
+        return when (bookId) {
+            "2" -> "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
+            // Thêm các sách khác ở đây
+            else -> "https://example.com/audio/${bookId}_part_$partNumber.mp3"
         }
     }
 

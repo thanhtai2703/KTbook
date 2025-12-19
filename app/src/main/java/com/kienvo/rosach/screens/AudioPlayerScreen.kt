@@ -25,43 +25,61 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kienvo.rosach.model.Book
+import com.kienvo.rosach.model.BookPart
+import com.kienvo.rosach.repository.BookRepository
 import com.kienvo.rosach.service.AudioPlayerService
 import com.kienvo.rosach.ui.theme.Yellow
+import com.kienvo.rosach.viewmodel.BookViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioPlayerScreen(
     navController: NavController,
-    bookId: String?
+    bookId: String?,
+    bookViewModel: BookViewModel = viewModel()
 ) {
-    // Dữ liệu sách dựa trên bookId
-    val isDacNhanTam = bookId == "2"
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val bookRepository = remember { BookRepository() }
 
-    val bookTitle = if (isDacNhanTam) "Đắc Nhân Tâm" else "Cuốn sách khác"
-    val bookAuthor = if (isDacNhanTam) "Dale Carnegie" else "Tác giả khác"
-    val bookCover = if (isDacNhanTam)
-        "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg"
-        else ""
+    // State cho sách và parts
+    var book by remember { mutableStateOf<Book?>(null) }
+    var bookParts by remember { mutableStateOf<List<BookPart>>(emptyList()) }
+    var currentPartIndex by remember { mutableIntStateOf(0) }
+    var isLoadingData by remember { mutableStateOf(true) }
 
     // Audio player state
-    val context = LocalContext.current
     val audioService = remember { AudioPlayerService(context) }
-
     val isPlaying by audioService.isPlaying.collectAsState()
     val isLoading by audioService.isLoading.collectAsState()
     val currentPosition by audioService.currentPosition.collectAsState()
     val duration by audioService.duration.collectAsState()
+    val error by audioService.error.collectAsState()
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
-    // Load audio when screen opens
-    LaunchedEffect(Unit) {
-        audioService.loadDacNhanTamAudio()
+    // Load sách và parts khi screen mở
+    LaunchedEffect(bookId) {
+        if (bookId != null) {
+            isLoadingData = true
+            book = bookViewModel.getBookById(bookId)
+            bookParts = bookRepository.getBookParts(bookId)
+
+            // Load audio của part đầu tiên
+            if (bookParts.isNotEmpty()) {
+                val firstPart = bookParts[0]
+                audioService.loadAudioFromUrl(firstPart.audioUrl)
+            }
+            isLoadingData = false
+        }
     }
 
     // Update slider position
@@ -84,11 +102,16 @@ fun AudioPlayerScreen(
         }
     }
 
+    // Current part info
+    val currentPart = if (bookParts.isNotEmpty() && currentPartIndex < bookParts.size) {
+        bookParts[currentPartIndex]
+    } else null
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Background với bìa sách blur
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(bookCover)
+                .data(book?.coverUrl ?: "")
                 .crossfade(true)
                 .build(),
             contentDescription = null,
@@ -105,118 +128,103 @@ fun AudioPlayerScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.3f),
-                            Color.Black.copy(alpha = 0.6f),
-                            Color.Black.copy(alpha = 0.8f)
+                            Color.Black.copy(alpha = 0.7f),
+                            Color.Black.copy(alpha = 0.9f)
                         )
                     )
                 )
         )
 
+        // Main content
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text(
-                            text = "Đang phát",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
+                    title = { Text("Đang phát", color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                Icons.Default.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color.White
-                            )
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
                     actions = {
                         IconButton(onClick = { }) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "More",
-                                tint = Color.White
-                            )
+                            Icon(Icons.Default.MoreVert, contentDescription = "More", tint = Color.White)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             }
         ) { paddingValues ->
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // Book Cover với shadow đẹp
-                Card(
-                    modifier = Modifier.size(280.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
+            if (isLoadingData) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
+                    CircularProgressIndicator(color = Yellow)
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Book cover
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(bookCover)
+                            .data(book?.coverUrl ?: "")
                             .crossfade(true)
                             .build(),
                         contentDescription = "Book Cover",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(20.dp))
+                            .size(280.dp)
+                            .clip(RoundedCornerShape(16.dp))
                     )
-                }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                // Book Info với style đẹp
-                Text(
-                    text = bookTitle,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = bookAuthor,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(50.dp))
-
-                // Audio Controls Card
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.15f)
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+                    // Book info
                     Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
+                        Text(
+                            text = book?.title ?: "Đang tải...",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = book?.author ?: "",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.LightGray,
+                            textAlign = TextAlign.Center
+                        )
 
-                        // Progress Slider
+                        // Current part
+                        if (currentPart != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = currentPart.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Yellow,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // Progress bar
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         Slider(
                             value = sliderPosition,
                             onValueChange = { newValue ->
@@ -231,113 +239,108 @@ fun AudioPlayerScreen(
                             colors = SliderDefaults.colors(
                                 thumbColor = Yellow,
                                 activeTrackColor = Yellow,
-                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                                inactiveTrackColor = Color.Gray
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Time labels
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
                                 text = formatTime(currentPosition),
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 14.sp
+                                color = Color.LightGray,
+                                fontSize = 12.sp
                             )
                             Text(
                                 text = formatTime(duration),
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 14.sp
+                                color = Color.LightGray,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Playback controls
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Previous/Rewind button
+                        IconButton(
+                            onClick = { audioService.seekBackward(15000L) },
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.FastRewind,
+                                contentDescription = "Rewind",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(30.dp))
-
-                        // Control Buttons
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        // Play/Pause button
+                        FloatingActionButton(
+                            onClick = { audioService.togglePlayPause() },
+                            containerColor = Yellow,
+                            modifier = Modifier.size(72.dp)
                         ) {
-
-                            // Previous button
-                            IconButton(
-                                onClick = { /* Previous logic */ },
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .background(
-                                        Color.White.copy(alpha = 0.2f),
-                                        CircleShape
-                                    )
-                            ) {
-                                Icon(
-                                    Icons.Default.FastRewind,
-                                    contentDescription = "Previous",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    color = Color.Black,
+                                    modifier = Modifier.size(32.dp)
                                 )
-                            }
-
-                            // Play/Pause button - Main
-                            Button(
-                                onClick = { audioService.togglePlayPause() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Yellow
-                                ),
-                                shape = CircleShape,
-                                modifier = Modifier.size(80.dp),
-                                enabled = !isLoading
-                            ) {
-                                if (isLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(32.dp),
-                                        color = Color.Black,
-                                        strokeWidth = 3.dp
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        tint = Color.Black,
-                                        modifier = Modifier.size(40.dp)
-                                    )
-                                }
-                            }
-
-                            // Next button
-                            IconButton(
-                                onClick = { /* Next logic */ },
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .background(
-                                        Color.White.copy(alpha = 0.2f),
-                                        CircleShape
-                                    )
-                            ) {
+                            } else {
                                 Icon(
-                                    Icons.Default.FastForward,
-                                    contentDescription = "Next",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                    contentDescription = if (isPlaying) "Pause" else "Play",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(40.dp)
                                 )
                             }
                         }
-                    }
-                }
 
-                Spacer(modifier = Modifier.weight(1f))
+                        // Next/Forward button
+                        IconButton(
+                            onClick = { audioService.seekForward(15000L) },
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.FastForward,
+                                contentDescription = "Forward",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+
+                    // Error message
+                    if (error != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = error ?: "",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
             }
         }
     }
 }
 
-private fun formatTime(timeMs: Long): String {
-    if (timeMs <= 0) return "00:00"
+// Helper function để format thời gian
+private fun formatTime(milliseconds: Long): String {
+    if (milliseconds <= 0) return "0:00"
 
-    val totalSeconds = timeMs / 1000
+    val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
-
-    return String.format("%02d:%02d", minutes, seconds)
+    return String.format("%d:%02d", minutes, seconds)
 }

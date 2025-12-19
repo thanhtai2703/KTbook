@@ -36,6 +36,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -60,25 +63,44 @@ import com.kienvo.rosach.model.getHomeScreenData
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.PaleYellow
 import com.kienvo.rosach.ui.theme.PaleYellowDark
+import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.widgets.BookSection
 import com.kienvo.rosach.widgets.FonosCarousel
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun FonosHomeScreen(
     navController: NavController? = null,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    bookViewModel: BookViewModel = viewModel()
 ) {
-    // Lấy danh sách các danh mục sách (Data động)
-    val homeCategories = remember { getHomeScreenData() }
+    // Load data từ Firestore
+    val allBooks by bookViewModel.allBooks.collectAsState()
+    val categories by bookViewModel.categories.collectAsState()
+    val featuredBooks by bookViewModel.featuredBooks.collectAsState()
+    val booksByCategory by bookViewModel.booksByCategory.collectAsState()
+    val isLoading by bookViewModel.isLoading.collectAsState()
+    val error by bookViewModel.error.collectAsState()
 
-    // Lấy list sách riêng để hiển thị Carousel (Banner)
-    val carouselBooks = remember { getBooks() }
+    // Load data khi màn hình được tạo
+    LaunchedEffect(Unit) {
+        bookViewModel.loadAllBooks()
+        bookViewModel.loadAllCategoriesWithBooks()
+    }
 
-    // State quản lý hình nền thay đổi theo carousel
-    val (currentBgUrl, setCurrentBgUrl) = remember { mutableStateOf(carouselBooks.firstOrNull()?.coverUrl) }
+    // Lấy list sách cho carousel (dùng featured books từ Firestore)
+    val carouselBooks = if (featuredBooks.isNotEmpty()) featuredBooks else allBooks.take(10)
+
+    // State quản lý hình nền thay đổi theo carousel - Cập nhật khi carouselBooks thay đổi
+    var currentBgUrl by remember { mutableStateOf<String?>(null) }
+
+    // Cập nhật background URL khi carouselBooks có dữ liệu
+    LaunchedEffect(carouselBooks) {
+        if (currentBgUrl == null && carouselBooks.isNotEmpty()) {
+            currentBgUrl = carouselBooks.first().coverUrl
+        }
+    }
 
     // Firebase Authentication - Kiểm tra trạng thái đăng nhập thực tế
     val auth = FirebaseAuth.getInstance()
@@ -211,169 +233,186 @@ fun FonosHomeScreen(
                 ),
             )
         }) { paddingValues ->
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 0.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
+            // Hình nền mờ động
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(currentBgUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(80.dp)
+            )
 
-            // === ITEM 1: HEADER (CHỨA HÌNH NỀN + CAROUSEL) ===
-            item {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+            )
+
+            // Hiển thị loading
+            if (isLoading && allBooks.isEmpty()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(650.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // 1. HÌNH NỀN
-                    currentBgUrl?.let { url ->
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
-                                .build(),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .blur(radius = 50.dp)
-                                .background(Color.Black.copy(alpha = 0.3f))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            color = PaleYellow
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Đang tải sách...", color = Color.White)
                     }
+                }
+            }
 
-                    // 2. GRADIENT PHỦ
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        DarkBg.copy(alpha = 0.2f),
-                                        DarkBg.copy(alpha = 0.8f),
-                                        DarkBg
-                                    )
-                                )
-                            )
-                    )
+            // Hiển thị error
+            error?.let { errorMessage ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(errorMessage, color = Color.Red)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { bookViewModel.refresh() }) {
+                            Text("Thử lại")
+                        }
+                    }
+                }
+            }
 
-                    // 3. CAROUSEL
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValues.calculateTopPadding())
-                    ) {
-                        Spacer(modifier = Modifier.height(10.dp))
+            // Hiển thị nội dung
+            if (!isLoading || allBooks.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 100.dp)
+                ) {
+                    // Carousel Banner
+                    item {
                         FonosCarousel(
                             books = carouselBooks,
                             onBookClick = { bookId ->
-                                navController?.navigate("detail/$bookId")},
-                            onCurrentPosterChanged = { url -> setCurrentBgUrl(url) },
+                                navController?.navigate("detail/$bookId")
+                            },
+                            onCurrentPosterChanged = { coverUrl ->
+                                currentBgUrl = coverUrl
+                            },
                             sharedTransitionScope = sharedTransitionScope,
-                            animatedVisibilityScope = animatedVisibilityScope)
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
-                }
-            }
 
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = (-120).dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Hàng Nút Bấm
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Nút 1: Phát Ngay (Có Gradient)
-                        Button(
-                            onClick = { /* TODO */ },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent
-                            ),
-                            contentPadding = PaddingValues(0.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .width(160.dp)
-                                .height(48.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(brush = buttonGradient),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                // Nội dung nút (Icon + Text) đặt lại padding ở đây
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = null,
-                                        tint = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Nghe Ngay",
-                                        color = Color.Black,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                    // Nếu có categories từ Firestore
+                    if (categories.isNotEmpty()) {
+                        items(categories) { category ->
+                            val booksForCategory = booksByCategory[category.slug] ?: emptyList()
+
+                            if (booksForCategory.isNotEmpty()) {
+                                BookSection(
+                                    title = category.name,
+                                    books = booksForCategory,
+                                    onBookClick = { bookId ->
+                                        navController?.navigate("detail/$bookId")
+                                    },
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                        }
+                    } else if (allBooks.isNotEmpty()) {
+                        // Fallback: Nếu chưa có categories từ Firestore, tự động chia nhóm
+                        // Top Thịnh Hành (10 sách đầu tiên)
+                        item {
+                            val topBooks = allBooks.take(10)
+                            if (topBooks.isNotEmpty()) {
+                                BookSection(
+                                    title = "Top Thịnh Hành 🔥",
+                                    books = topBooks,
+                                    onBookClick = { bookId ->
+                                        navController?.navigate("detail/$bookId")
+                                    },
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
                             }
                         }
 
-                        Spacer(modifier = Modifier.width(16.dp))
+                        // Mới Ra Mắt (sách có rating cao)
+                        item {
+                            val newBooks = allBooks.sortedByDescending { it.rating }.take(8)
+                            if (newBooks.isNotEmpty()) {
+                                BookSection(
+                                    title = "Mới Ra Mắt ✨",
+                                    books = newBooks,
+                                    onBookClick = { bookId ->
+                                        navController?.navigate("detail/$bookId")
+                                    },
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                        }
 
-                        // Nút 2: Chi Tiết (Màu Trắng, Chữ Đen)
-                        Button(
-                            onClick = { /* TODO */ },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .width(160.dp)
-                                .height(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Chi Tiết",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold
+                        // Được Yêu Thích (rating > 4.5)
+                        item {
+                            val favoriteBooks = allBooks.filter { it.rating >= 4.5 }.take(8)
+                            if (favoriteBooks.isNotEmpty()) {
+                                BookSection(
+                                    title = "Được Yêu Thích ❤️",
+                                    books = favoriteBooks,
+                                    onBookClick = { bookId ->
+                                        navController?.navigate("detail/$bookId")
+                                    },
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                        }
+
+                        // Dành Cho Bạn (random)
+                        item {
+                            val randomBooks = allBooks.shuffled().take(8)
+                            if (randomBooks.isNotEmpty()) {
+                                BookSection(
+                                    title = "Dành Cho Bạn 🎯",
+                                    books = randomBooks,
+                                    onBookClick = { bookId ->
+                                        navController?.navigate("detail/$bookId")
+                                    },
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                        }
+
+                        // Tất cả sách (phần cuối)
+                        item {
+                            BookSection(
+                                title = "Tất Cả Sách 📚",
+                                books = allBooks,
+                                onBookClick = { bookId ->
+                                    navController?.navigate("detail/$bookId")
+                                },
+                                sharedTransitionScope = sharedTransitionScope,
+                                animatedVisibilityScope = animatedVisibilityScope
                             )
                         }
                     }
                 }
-            }
-
-            // === ITEM 3: DANH SÁCH CÁC DANH MỤC (TỰ ĐỘNG SINH) ===
-            items(homeCategories) { category ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = (-80).dp)
-                ) {
-                    BookSection(
-                        title = category.title,
-                        books = category.books,
-                        onBookClick = { bookId ->
-                            navController?.navigate("detail/$bookId")
-                        },
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }

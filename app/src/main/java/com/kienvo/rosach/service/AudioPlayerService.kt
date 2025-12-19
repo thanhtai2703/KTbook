@@ -27,7 +27,10 @@ class AudioPlayerService(private val context: Context) {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // URL audio "Đắc Nhân Tâm" từ Firebase
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    // Fallback URL cho demo (Đắc Nhân Tâm)
     private val dacNhanTamAudioUrl = "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
 
     init {
@@ -39,29 +42,60 @@ class AudioPlayerService(private val context: Context) {
             addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     _isLoading.value = playbackState == Player.STATE_BUFFERING
+
+                    when (playbackState) {
+                        Player.STATE_READY -> {
+                            _duration.value = duration
+                            _error.value = null
+                        }
+                        Player.STATE_ENDED -> {
+                            _isPlaying.value = false
+                        }
+                    }
                     updatePlaybackState()
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     _isPlaying.value = isPlaying
                 }
+
+                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    _error.value = "Lỗi phát audio: ${error.message}"
+                    _isLoading.value = false
+                }
             })
         }
     }
 
-    fun loadDacNhanTamAudio() {
-        exoPlayer?.let { player ->
-            val mediaItem = MediaItem.fromUri(dacNhanTamAudioUrl)
-            player.setMediaItem(mediaItem)
-            player.prepare()
-            player.addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY) {
-                        _duration.value = player.duration
-                    }
-                }
-            })
+    /**
+     * Load audio từ URL bất kỳ
+     */
+    fun loadAudioFromUrl(audioUrl: String) {
+        if (audioUrl.isEmpty()) {
+            _error.value = "URL audio không hợp lệ"
+            return
         }
+
+        try {
+            _isLoading.value = true
+            _error.value = null
+
+            exoPlayer?.let { player ->
+                val mediaItem = MediaItem.fromUri(audioUrl)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+            }
+        } catch (e: Exception) {
+            _error.value = "Không thể load audio: ${e.message}"
+            _isLoading.value = false
+        }
+    }
+
+    /**
+     * Load audio "Đắc Nhân Tâm" (fallback cho demo)
+     */
+    fun loadDacNhanTamAudio() {
+        loadAudioFromUrl(dacNhanTamAudioUrl)
     }
 
     fun play() {
@@ -74,6 +108,7 @@ class AudioPlayerService(private val context: Context) {
 
     fun seekTo(position: Long) {
         exoPlayer?.seekTo(position)
+        _currentPosition.value = position
     }
 
     fun togglePlayPause() {
@@ -83,6 +118,20 @@ class AudioPlayerService(private val context: Context) {
             } else {
                 play()
             }
+        }
+    }
+
+    fun seekForward(milliseconds: Long = 15000L) {
+        exoPlayer?.let { player ->
+            val newPosition = (player.currentPosition + milliseconds).coerceAtMost(player.duration)
+            seekTo(newPosition)
+        }
+    }
+
+    fun seekBackward(milliseconds: Long = 15000L) {
+        exoPlayer?.let { player ->
+            val newPosition = (player.currentPosition - milliseconds).coerceAtLeast(0L)
+            seekTo(newPosition)
         }
     }
 

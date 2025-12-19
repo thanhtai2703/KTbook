@@ -23,17 +23,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.ui.theme.AppColors
+import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.widgets.ebook.EbookBackground
 import com.kienvo.rosach.widgets.ebook.EbookBanner
 import com.kienvo.rosach.widgets.ebook.EbookCard
 
 @Composable
-fun EbookScreen(navController: NavController) {
+fun EbookScreen(
+    navController: NavController,
+    bookViewModel: BookViewModel = viewModel()
+) {
     val listState = rememberLazyListState()
+
+    // Load data từ Firestore
+    val allBooks by bookViewModel.allBooks.collectAsState()
+    val booksByCategory by bookViewModel.booksByCategory.collectAsState()
+    val isLoading by bookViewModel.isLoading.collectAsState()
+
+    // Load data khi màn hình được tạo
+    LaunchedEffect(Unit) {
+        if (allBooks.isEmpty()) {
+            bookViewModel.loadAllBooks()
+        }
+        // Load các categories cho ebook
+        listOf("top", "free", "literature", "health", "psychology", "lifestyle", "philosophy", "business").forEach {
+            bookViewModel.loadBooksByCategory(it)
+        }
+    }
+
+    // Lấy sách theo category
+    val topEbooks = booksByCategory["top"] ?: emptyList()
+    val freeEbooks = booksByCategory["free"] ?: emptyList()
+    val literatureEbooks = booksByCategory["literature"] ?: emptyList()
+    val healthEbooks = booksByCategory["health"] ?: emptyList()
+    val psychologyEbooks = booksByCategory["psychology"] ?: emptyList()
+    val lifestyleEbooks = booksByCategory["lifestyle"] ?: emptyList()
+    val philosophyEbooks = booksByCategory["philosophy"] ?: emptyList()
+    val businessEbooks = booksByCategory["business"] ?: emptyList()
 
     val showStickyHeader by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 100 }
@@ -57,29 +88,83 @@ fun EbookScreen(navController: NavController) {
                 Spacer(Modifier.height(24.dp))
             }
 
-            // Top 10
-            item {
-                SectionHeader("Top 10 Thịnh Hành Hôm Nay 🔥", onClick = {})
-                Spacer(Modifier.height(16.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(SampleData.topEbooks) { book ->
-                        EbookCard(book)
+            // Loading indicator
+            if (isLoading && allBooks.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = AppColors.EbookPurpleBarStart)
                     }
                 }
-                Spacer(Modifier.height(32.dp))
             }
 
-            // Các section khác
-            item { EbookSection(title = "Ebook Miễn Phí", books = SampleData.freeEbooks) }
-            item { EbookSection(title = "Văn Học Kinh Điển", books = SampleData.literatureEbooks) }
-            item { EbookSection(title = "Sức Khỏe & Dinh Dưỡng", books = SampleData.healthEbooks) }
-            item { EbookSection(title = "Tâm Lý Học Ứng Dụng", books = SampleData.psychologyEbooks) }
-            item { EbookSection(title = "Phong Cách Sống", books = SampleData.lifestyleEbooks) }
-            item { EbookSection(title = "Triết Học & Tư Tưởng", books = SampleData.philosophyEbooks) }
-            item { EbookSection(title = "Kinh Tế & Đầu Tư", books = SampleData.businessEbooks) }
+            // Top 10
+            if (topEbooks.isNotEmpty()) {
+                item {
+                    SectionHeader("Top 10 Thịnh Hành Hôm Nay 🔥", onClick = {})
+                    Spacer(Modifier.height(16.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(topEbooks) { book ->
+                            EbookCard(book)
+                        }
+                    }
+                    Spacer(Modifier.height(32.dp))
+                }
+            }
+
+            // Các section khác - chỉ hiển thị nếu có dữ liệu
+            if (freeEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Ebook Miễn Phí", books = freeEbooks) }
+            }
+            if (literatureEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Văn Học Kinh Điển", books = literatureEbooks) }
+            }
+            if (healthEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Sức Khỏe & Dinh Dưỡng", books = healthEbooks) }
+            }
+            if (psychologyEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Tâm Lý Học Ứng Dụng", books = psychologyEbooks) }
+            }
+            if (lifestyleEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Phong Cách Sống", books = lifestyleEbooks) }
+            }
+            if (philosophyEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Triết Học & Tư Tưởng", books = philosophyEbooks) }
+            }
+            if (businessEbooks.isNotEmpty()) {
+                item { EbookSection(title = "Kinh Tế & Đầu Tư", books = businessEbooks) }
+            }
+
+            // Nếu không có dữ liệu từ Firestore, fallback về SampleData
+            if (!isLoading && allBooks.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Không có dữ liệu",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Vui lòng upload data từ màn hình Admin",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
         }
 
         // 3. Custom Top Bar
