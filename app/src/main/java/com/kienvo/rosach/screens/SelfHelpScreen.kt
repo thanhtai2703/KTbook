@@ -76,7 +76,7 @@ fun SelfHelpScreen(navController: NavController) {
     var isGridView by remember { mutableStateOf(false) }
 
     val books: List<Book> = remember {
-        SampleData.psychologyEbooks + SampleData.lifestyleEbooks + SampleData.psychologyEbooks
+        SampleData.healingBooks + SampleData.popularBooks + SampleData.popularBooks
     }
 
     Column(
@@ -166,7 +166,7 @@ fun SelfHelpScreen(navController: NavController) {
                             BookGridItem(
                                 title = book.title,
                                 author = book.author,
-                                coverUrl = book.coverUrl,
+                                coverUrl = book.coverUrl.toString(),
                                 rating = book.rating,
                                 reviewCount = 104
                             )
@@ -181,7 +181,7 @@ fun SelfHelpScreen(navController: NavController) {
                             BookListItem(
                                 title = book.title,
                                 author = book.author,
-                                coverUrl = book.coverUrl,
+                                coverUrl = book.coverUrl.toString(),
                                 rating = book.rating,
                                 reviewCount = 104,
                                 onClick = {}

@@ -103,7 +103,7 @@ fun HomeScreen(
 
     LaunchedEffect(carouselBooks) {
         if (currentBgUrl == null && carouselBooks.isNotEmpty()) {
-            currentBgUrl = carouselBooks.first().coverUrl
+            currentBgUrl = carouselBooks.first().coverUrl.toString()
         }
     }
 
@@ -127,7 +127,7 @@ fun HomeScreen(
     fun navigateToDetailWithBook(book: Book, sourceKey: String) {
         val title = URLEncoder.encode(book.title, StandardCharsets.UTF_8.toString())
         val author = URLEncoder.encode(book.author, StandardCharsets.UTF_8.toString())
-        val cover = URLEncoder.encode(book.coverUrl, StandardCharsets.UTF_8.toString())
+        val cover = URLEncoder.encode(book.coverUrl.toString(), StandardCharsets.UTF_8.toString())
         navController?.navigate("detail/${book.id}?title=$title&author=$author&coverUrl=$cover&sourceKey=$sourceKey")
     }
 

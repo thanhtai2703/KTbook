@@ -81,7 +81,7 @@ fun FonosCarousel(
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { pageIndex ->
             val realIndex = pageIndex % realCount
-            onCurrentPosterChanged(books[realIndex].coverUrl)
+            onCurrentPosterChanged(books[realIndex].coverUrl.toString())
         }
     }
 

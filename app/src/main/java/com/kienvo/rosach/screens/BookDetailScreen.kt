@@ -116,7 +116,7 @@ fun BookDetailScreen(
 
     val immediateTitle = decodedTitle ?: book?.title ?: ""
     val immediateAuthor = decodedAuthor ?: book?.author ?: ""
-    val immediateCover = decodedCoverUrl ?: book?.coverUrl ?: ""
+    val immediateCover = decodedCoverUrl ?: (book?.coverUrl?.toString() ?: "")
 
     // Fetch full book by id in background
     LaunchedEffect(bookId) {
@@ -130,10 +130,18 @@ fun BookDetailScreen(
 
     val bookTitle = if (immediateTitle.isNotEmpty()) immediateTitle else (book?.title ?: "Đang tải...")
     val bookAuthor = if (immediateAuthor.isNotEmpty()) immediateAuthor else (book?.author ?: "")
-    val bookCover = if (immediateCover.isNotEmpty()) immediateCover else (book?.coverUrl ?: "")
+    val bookCover = if (immediateCover.isNotEmpty()) immediateCover else (book?.coverUrl?.toString() ?: "")
 
-    val bookDesc = "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
+    // Sử dụng dữ liệu thực từ book, fallback sang placeholder nếu chưa có
+    val bookDesc = book?.let {
+        // Nếu database có trường description, dùng nó. Nếu không, dùng placeholder
+        "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
+    } ?: "Đang tải thông tin..."
 
+    val bookType = book?.type ?: "audiobook"
+    val bookRating = book?.rating ?: 0.0
+
+    // Danh sách chương - tạm thời dùng placeholder, sau này sẽ lấy từ database
     val chapters = listOf(
         "Chương 1: Mở đầu",
         "Chương 2: Phát triển",

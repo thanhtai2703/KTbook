@@ -35,6 +35,7 @@ import com.kienvo.rosach.screens.SearchScreen
 import com.kienvo.rosach.widgets.BottomBar
 import com.kienvo.rosach.screens.EbookScreen
 import com.kienvo.rosach.screens.HomeScreen
+import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
 import com.kienvo.rosach.screens.SelfHelpScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
@@ -282,6 +283,19 @@ fun AppNavigation(
                     AudioPlayerScreen(
                         navController = navController,
                         bookId = bookId
+                    )
+                }
+
+                composable(
+                    route = "kid_detail/{bookId}",
+                    arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val bookId = backStackEntry.arguments?.getString("bookId")
+                    KidBookDetailScreen(
+                        navController = navController,
+                        bookId = bookId,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = this
                     )
                 }
 
