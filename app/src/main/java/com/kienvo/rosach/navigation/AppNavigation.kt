@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
@@ -219,6 +220,36 @@ fun AppNavigation(
                         bookId = bookId,
                         sharedTransitionScope = this@SharedTransitionLayout,
                         animatedVisibilityScope = this
+                    )
+                }
+
+                // New: Book detail with instant args
+                composable(
+                    route = "detail/{id}?title={title}&author={author}&coverUrl={coverUrl}&sourceKey={sourceKey}",
+                    arguments = listOf(
+                        navArgument("id") { type = NavType.StringType },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("author") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("coverUrl") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("sourceKey") { type = NavType.StringType; defaultValue = "" }
+                    )
+                ) {
+                    val args = it.arguments!!
+                    val id = args.getString("id")
+                    val title = args.getString("title")
+                    val author = args.getString("author")
+                    val coverUrl = args.getString("coverUrl")
+                    val sourceKey = args.getString("sourceKey")
+
+                    BookDetailScreen(
+                        navController = navController,
+                        bookId = id,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = this,
+                        initialTitle = title,
+                        initialAuthor = author,
+                        initialCoverUrl = coverUrl,
+                        sourceKey = sourceKey
                     )
                 }
 

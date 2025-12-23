@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -158,8 +159,14 @@ fun FonosCarousel(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                                     .sharedElement(
-                                        sharedContentState = rememberSharedContentState(key = "image-${book.id}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
+                                        sharedContentState = rememberSharedContentState(key = "book-carousel-${book.id}"),
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        boundsTransform = { _, _ ->
+                                            spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessLow
+                                            )
+                                        }
                                     )
                             )
                         }

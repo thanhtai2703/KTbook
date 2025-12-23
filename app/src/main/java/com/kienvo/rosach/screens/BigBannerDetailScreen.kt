@@ -81,8 +81,8 @@ fun BigBannerDetailScreen(navController: NavController) {
     val topBooks = remember {
         listOf(
             BookRanked(1, "https://images-na.ssl-images-amazon.com/images/I/811PTyrckTL.jpg", 5.0, 11),
-            BookRanked(2, "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Sherlock_Holmes_-_The_Norwood_Mystery_-_cover.jpg/640px-Sherlock_Holmes_-_The_Norwood_Mystery_-_cover.jpg", 5.0, 6),
-            BookRanked(3, "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Frankenstein_1818_edition_title_page.jpg/640px-Frankenstein_1818_edition_title_page.jpg", 4.5, 9)
+            BookRanked(2, "https://cdn1.fahasa.com/media/catalog/product/i/m/image_244718_1_1462.jpg", 5.0, 6),
+            BookRanked(3, "https://www.netabooks.vn/Data/Sites/1/Product/43360/frankenstein-hay-prometheus-thoi-hien-dai.jpg", 4.5, 9)
         )
     }
 

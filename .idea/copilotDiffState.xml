@@ -19,6 +19,14 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/kienvo/rosach/FonosCloneApp.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/kienvo/rosach/FonosCloneApp.kt" />
+              <option name="updatedContent" value="package com.kienvo.rosach&#10;&#10;import android.app.Application&#10;import com.google.firebase.FirebaseApp&#10;&#10;class FonosCloneApp : Application() {&#10;    override fun onCreate() {&#10;        super.onCreate()&#10;        FirebaseApp.initializeApp(this)&#10;    }&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

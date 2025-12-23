@@ -3,6 +3,8 @@ package com.kienvo.rosach.widgets
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,7 +29,8 @@ fun BookCard(
     book: Book,
     onBookClick: (String) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sourceKey: String = "default"
 ) {
     Column(
         modifier = Modifier
@@ -35,7 +38,7 @@ fun BookCard(
             .padding(end = 12.dp)
             .clickable { onBookClick(book.id) }
     ) {
-        // 1. Ảnh bìa (Bo góc)
+        // 1. Ảnh bìa (Bo góc) với animation mượt mà
         Card(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
@@ -52,8 +55,14 @@ fun BookCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                         .sharedElement(
-                            sharedContentState = rememberSharedContentState(key = "image-${book.id}"),
-                            animatedVisibilityScope = animatedVisibilityScope
+                            sharedContentState = rememberSharedContentState(key = "book-${sourceKey}-${book.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = { _, _ ->
+                                spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            }
                         )
                 )
             }
@@ -75,7 +84,7 @@ fun BookCard(
         Text(
             text = book.author,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = Color(0xFFBBBBBB),
             maxLines = 1
         )
     }
