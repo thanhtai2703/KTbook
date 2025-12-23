@@ -1,4 +1,4 @@
-package com.kienvo.fonosclone.navigation
+package com.kienvo.rosach.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -22,12 +22,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-import com.kienvo.rosach.navigation.Screen
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
+import com.kienvo.rosach.screens.DataMigrationScreen
 import com.kienvo.rosach.screens.PersonalScreen
 import com.kienvo.rosach.screens.PlaceholderScreen
 import com.kienvo.rosach.screens.SearchScreen
@@ -256,7 +256,7 @@ fun AppNavigation(
 
                 // --- MÀN HÌNH ADMIN MIGRATION ---
                 composable(Screen.DataMigration.route) {
-                    com.kienvo.rosach.screens.DataMigrationScreen(
+                    DataMigrationScreen(
                         onNavigateBack = { navController.popBackStack() }
                     )
                 }
