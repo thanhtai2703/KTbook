@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.kienvo.fonosclone.navigation.AppNavigation
+import com.kienvo.rosach.navigation.AppNavigation
 import com.kienvo.rosach.ui.theme.FonosCloneTheme
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
