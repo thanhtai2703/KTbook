@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.ui.theme.AppColors
 import com.kienvo.rosach.viewmodel.BookViewModel
@@ -112,7 +111,9 @@ fun EbookScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(topEbooks) { book ->
-                            EbookCard(book)
+                            EbookCard(book, onClick = {
+                                navController.navigate("detail/${book.id}")
+                            })
                         }
                     }
                     Spacer(Modifier.height(32.dp))
@@ -121,25 +122,25 @@ fun EbookScreen(
 
             // Các section khác - chỉ hiển thị nếu có dữ liệu
             if (freeEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Ebook Miễn Phí", books = freeEbooks) }
+                item { EbookSection(title = "Ebook Miễn Phí", books = freeEbooks, navController = navController) }
             }
             if (literatureEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Văn Học Kinh Điển", books = literatureEbooks) }
+                item { EbookSection(title = "Văn Học Kinh Điển", books = literatureEbooks, navController = navController) }
             }
             if (healthEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Sức Khỏe & Dinh Dưỡng", books = healthEbooks) }
+                item { EbookSection(title = "Sức Khỏe & Dinh Dưỡng", books = healthEbooks, navController = navController) }
             }
             if (psychologyEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Tâm Lý Học Ứng Dụng", books = psychologyEbooks) }
+                item { EbookSection(title = "Tâm Lý Học Ứng Dụng", books = psychologyEbooks, navController = navController) }
             }
             if (lifestyleEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Phong Cách Sống", books = lifestyleEbooks) }
+                item { EbookSection(title = "Phong Cách Sống", books = lifestyleEbooks, navController = navController) }
             }
             if (philosophyEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Triết Học & Tư Tưởng", books = philosophyEbooks) }
+                item { EbookSection(title = "Triết Học & Tư Tưởng", books = philosophyEbooks, navController = navController) }
             }
             if (businessEbooks.isNotEmpty()) {
-                item { EbookSection(title = "Kinh Tế & Đầu Tư", books = businessEbooks) }
+                item { EbookSection(title = "Kinh Tế & Đầu Tư", books = businessEbooks, navController = navController) }
             }
 
             // Nếu không có dữ liệu từ Firestore, fallback về SampleData
@@ -229,7 +230,7 @@ fun EbookTopBar(isVisible: Boolean, navController: NavController) {
 }
 
 @Composable
-fun EbookSection(title: String, books: List<Book>) {
+fun EbookSection(title: String, books: List<Book>, navController: NavController) {
     Column(modifier = Modifier.padding(bottom = 32.dp)) {
         SectionHeader(title, onClick = {})
         Spacer(Modifier.height(16.dp))
@@ -238,7 +239,9 @@ fun EbookSection(title: String, books: List<Book>) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(books) { book ->
-                EbookCard(book)
+                EbookCard(book, onClick = {
+                    navController.navigate("detail/${book.id}")
+                })
             }
         }
     }

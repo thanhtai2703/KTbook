@@ -21,17 +21,18 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kienvo.rosach.data.SampleData
+import com.kienvo.rosach.model.Book
 
 /**
  * Card hiển thị truyện thiếu nhi
  */
 @Composable
-fun KidsStoryCard(story: SampleData.KidStory) {
+fun KidsStoryCard(book: Book) {
     Column {
         // Ảnh bìa bo tròn
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(story.imageUrl)
+                .data(book.coverUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = null,
@@ -47,7 +48,7 @@ fun KidsStoryCard(story: SampleData.KidStory) {
 
         // Tên truyện
         Text(
-            text = story.title,
+            text = book.title,
             color = Color.White,
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp,
@@ -68,7 +69,7 @@ fun KidsStoryCard(story: SampleData.KidStory) {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = story.duration,
+                text = book.author,
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 13.sp
             )
