@@ -47,6 +47,13 @@ import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
 import com.kienvo.rosach.screens.LibraryScreen
 import com.kienvo.rosach.screens.SelfHelpScreen
+import com.kienvo.rosach.screens.settings.AboutScreen
+import com.kienvo.rosach.screens.settings.ContactScreen
+import com.kienvo.rosach.screens.settings.HelpCenterScreen
+import com.kienvo.rosach.screens.settings.LanguageScreen
+import com.kienvo.rosach.screens.settings.NotificationSettingsScreen
+import com.kienvo.rosach.screens.settings.ProfileInfoScreen
+import com.kienvo.rosach.screens.settings.ThemeSettingsScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
 import com.kienvo.rosach.viewmodel.PlayerViewModel
@@ -415,6 +422,15 @@ fun AppNavigation(
                             playerViewModel = playerViewModel
                         )
                     }
+
+                    // --- MÀN HÌNH CÀI ĐẶT ---
+                    composable("settings/language") { LanguageScreen(navController) }
+                    composable("settings/theme") { ThemeSettingsScreen(navController) }
+                    composable("settings/notification") { NotificationSettingsScreen(navController) }
+                    composable("settings/about") { AboutScreen(navController) }
+                    composable("settings/contact") { ContactScreen(navController) }
+                    composable("settings/help_center") { HelpCenterScreen(navController) }
+                    composable("settings/profile_info") { ProfileInfoScreen(navController) }
                 }
             }
         }
