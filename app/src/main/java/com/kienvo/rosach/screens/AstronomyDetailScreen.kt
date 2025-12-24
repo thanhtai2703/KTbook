@@ -36,17 +36,17 @@ import coil.request.ImageRequest
 import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.ui.theme.DarkBg
-import com.kienvo.rosach.viewmodel.BookViewModel
+import com.kienvo.rosach.viewmodel.PlayerViewModel
 import com.kienvo.rosach.viewmodel.LibraryViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun KidBookDetailScreen(
+fun AstronomyDetailScreen(
     navController: NavController,
     bookId: String?,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    bookViewModel: BookViewModel = viewModel(),
+    playerViewModel: PlayerViewModel = viewModel(),
     libraryViewModel: LibraryViewModel = viewModel()
 ) {
     // 1. Tìm sách trong SampleData
@@ -54,22 +54,22 @@ fun KidBookDetailScreen(
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            // Tìm trong allBooks (vì allBooks đã chứa cả kidsStories)
+            // Tìm trong allBooks
             book = SampleData.allBooks.find { it.id == bookId }
         }
     }
 
-    // Fallback nếu không tìm thấy (tránh crash)
-    val displayBook = book ?: Book("id", "Đang tải...", "...", "", "kid", 0.0)
+    // Fallback nếu không tìm thấy
+    val displayBook = book ?: Book("id", "Đang tải...", "...", "", "astronomy", 0.0)
 
     // Lấy trạng thái yêu thích từ LibraryViewModel
     val favorites by libraryViewModel.favorites.collectAsState()
     val isFavorite = favorites.any { it.id == displayBook.id }
 
-    // Colors
-    val KidOrange = Color(0xFFFF7043)
-    val GradientPinkOrange = Brush.horizontalGradient(
-        colors = listOf(Color(0xFFE57373), Color(0xFFFFB74D))
+    // Colors - Màu xanh tím không gian cho sách thiên văn
+    val AstronomyPurple = Color(0xFF7E57C2)
+    val GradientSpaceBlue = Brush.horizontalGradient(
+        colors = listOf(Color(0xFF283593), Color(0xFF5E35B1), Color(0xFF7E57C2))
     )
 
     Box(modifier = Modifier.fillMaxSize().background(DarkBg)) {
@@ -141,22 +141,40 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Metadata (Giả lập thời lượng vì model Book không có)
-            val fakeDuration = (10..30).random() // Random phút cho sinh động
+            // Metadata
+            val fakeDuration = (45..90).random() // Sách thiên văn thường dài hơn
             Text(
-                text = "Truyện thiếu nhi • $fakeDuration phút",
-                color = KidOrange,
+                text = "Thiên văn học • ${displayBook.author} • $fakeDuration phút",
+                color = AstronomyPurple,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Rating
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "⭐ ${displayBook.rating}",
+                    color = Color(0xFFFFD700),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(${(100..500).random()} đánh giá)",
+                    color = Color.Gray,
+                    fontSize = 13.sp
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            ActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
+            AstronomyActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
             Spacer(modifier = Modifier.height(16.dp))
 
             // Nút Yêu thích với logic toggle
-            KidFavoriteActionRow(
+            AstronomyFavoriteActionRow(
                 isFavorite = isFavorite,
                 onToggle = {
                     libraryViewModel.toggleFavorite(displayBook)
@@ -165,9 +183,18 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Mô tả (Giả lập)
+            // Mô tả
             Text(
-                text = "${displayBook.title} là một câu chuyện tuyệt vời của tác giả ${displayBook.author}. Câu chuyện mang đến những bài học ý nghĩa về cuộc sống, tình bạn và lòng dũng cảm, được kể lại qua giọng đọc truyền cảm dành riêng cho các bé.",
+                text = "Giới thiệu",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "${displayBook.title} của tác giả ${displayBook.author} là một hành trình khám phá vũ trụ đầy mê hoặc. " +
+                        "Cuốn sách đưa bạn đi từ những hiện tượng thiên văn cơ bản đến những bí ẩn sâu thẳm của không gian. " +
+                        "Với giọng kể sinh động, đây là tác phẩm không thể bỏ qua cho những ai đam mê khoa học vũ trụ.",
                 color = Color.Gray,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -176,11 +203,12 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Nút Nghe Ngay
+            // Nút Nghe Ngay với PlayerViewModel
             Button(
                 onClick = {
-                    // Chuyển sang màn hình Player
-                    navController.navigate("kid_audio_player/${displayBook.id}")
+                    // Khởi tạo player và chuyển sang màn hình player full
+                    playerViewModel.playBook(displayBook)
+                    navController.navigate("astronomy_audio_player/${displayBook.id}")
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -188,7 +216,7 @@ fun KidBookDetailScreen(
                 shape = RoundedCornerShape(50)
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize().background(GradientPinkOrange, shape = RoundedCornerShape(50)),
+                    modifier = Modifier.fillMaxSize().background(GradientSpaceBlue, shape = RoundedCornerShape(50)),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -203,9 +231,8 @@ fun KidBookDetailScreen(
     }
 }
 
-// Giữ nguyên ActionRowItem
 @Composable
-fun ActionRowItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+fun AstronomyActionRowItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().clickable { }.padding(vertical = 4.dp)
@@ -221,9 +248,8 @@ fun ActionRowItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: S
     }
 }
 
-// KidFavoriteActionRow composable
 @Composable
-fun KidFavoriteActionRow(
+fun AstronomyFavoriteActionRow(
     isFavorite: Boolean,
     onToggle: () -> Unit
 ) {
@@ -236,7 +262,7 @@ fun KidFavoriteActionRow(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                 contentDescription = null,
                 tint = if (isFavorite) Color.Red else Color.LightGray,
                 modifier = Modifier.size(20.dp)
@@ -245,7 +271,7 @@ fun KidFavoriteActionRow(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = if (isFavorite) "Đã yêu thích" else "Yêu thích",
-            color = Color.LightGray,
+            color = if (isFavorite) Color.Red else Color.LightGray,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )

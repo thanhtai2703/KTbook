@@ -84,13 +84,25 @@ object SampleData {
         Book("kid_8", "Bạn cún đi lạc", "Nhiều tác giả", R.drawable.dog, "kid", 4.5)
     )
 
+    // ============ ASTRONOMY BOOKS DATA ============
+    private val astronomyBooksBase = listOf(
+        Book("astro_1", "Vũ Trụ Trong Vỏ Hạt Dẻ", "Stephen Hawking", "https://nhasachmienphi.com/images/thumbnail/nhasachmienphi-vu-tru-trong-vo-hat-de.jpg", "astronomy", 4.9),
+        Book("astro_2", "Lược Sử Vũ Trụ", "Anne Rooney", R.drawable.luocsuvutru, "astronomy", 4.8),
+        Book("astro_3", "Vũ Trụ", "Carl Sagan", "https://dtv-ebook.com.vn/images/files_2/2022/012022/vu-tru-carl-sagan.jpg", "astronomy", 4.9),
+        Book("astro_4", "Sách Khởi Nguyên Của Vũ Trụ: Lịch Sử 14 Tỉ Năm Tiến Hóa", "Neil deGrasse Tyson", R.drawable.khoinguyenvutru, "astronomy", 4.7),
+        Book("astro_5", "Thiên Văn Học Trực Quan", "Ian Ridpath", "https://dinhtibooks.com.vn/images/products/2025/06/large/z6740584211172_6ca8f37d73f2847372b77b758480d665_1750835364.webp", "astronomy", 4.6),
+        Book("astro_6", "Từ Điển Thiên Văn Học Và Vật Lý Thiên Văn", "Đặng Vũ Tuấn Sơn", "https://product.hstatic.net/200000273991/product/92_e7a461a5aec645b4811f014ca5669188_master.png", "astronomy", 4.5),
+        Book("astro_7", "Thiên Văn Học Cho Người Mới", "Carolyn Collins", "https://cdn0.fahasa.com/media/catalog/product/z/4/z4726478155308_f3f7b3c4a5a4c4a5a4c4a5a4c4a5a4c4.jpg", "astronomy", 4.4),
+        Book("astro_8", "Những Bí Ẩn Vũ Trụ", "Brian Cox", "https://salt.tikicdn.com/cache/w1200/ts/product/8d/5e/26/7b5c5e26d5e26d5e26d5e26d5e26d5e2.jpg", "astronomy", 4.7)
+    )
+
     // ============ PUBLIC PROPERTIES (EXPOSE RA NGOÀI) ============
 
     // List chứa TẤT CẢ sách trong hệ thống (bao gồm cả Kids)
     // Điều này giúp hàm getBookById(id) có thể tìm thấy sách Kids
     val allBooks: List<Book> = audioBooksBase + popularBooksBase + healingBooksBase +
             detectiveBooksBase + topEbooksBase + freeEbooksBase +
-            kidsBooksBase
+            kidsBooksBase + astronomyBooksBase
 
     // Các list lẻ để hiển thị theo từng mục (nếu cần)
     val audioBooks: List<Book> = audioBooksBase
@@ -102,4 +114,5 @@ object SampleData {
 
     // QUAN TRỌNG: kidsStories bây giờ trả về List<Book> chứ không phải List<KidStory>
     val kidsStories: List<Book> = kidsBooksBase
+    val astronomyBooks: List<Book> = astronomyBooksBase
 }

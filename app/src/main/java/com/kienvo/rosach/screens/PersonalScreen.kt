@@ -1,6 +1,7 @@
 package com.kienvo.rosach.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -83,7 +84,10 @@ fun PersonalScreen(
                     username = userProfile?.username ?: "Người dùng",
                     email = userProfile?.email ?: "",
                     avatarUrl = userProfile?.avatarUrl ?: "",
-                    createdAt = userProfile?.createdAt ?: 0L
+                    createdAt = userProfile?.createdAt ?: 0L,
+                    onEditClick = {
+                        navController?.navigate("settings/profile_info")
+                    }
                 )
 
                 // Settings Sections
@@ -91,19 +95,19 @@ fun PersonalScreen(
                     title = "Tài khoản",
                     items = listOf(
                         SettingItem("Thông tin cá nhân", Icons.Default.Person),
-                        SettingItem("Bảo mật", Icons.Default.Security),
                         SettingItem("Thông báo", Icons.Default.Notifications)
-                    )
+                    ),
+                    navController = navController
                 )
 
                 SettingsSection(
                     title = "Ứng dụng",
                     items = listOf(
-                        SettingItem("Chất lượng âm thanh", Icons.Default.AudioFile),
                         SettingItem("Tải xuống", Icons.Default.Download),
                         SettingItem("Giao diện", Icons.Default.Palette),
                         SettingItem("Ngôn ngữ", Icons.Default.Language)
-                    )
+                    ),
+                    navController = navController
                 )
 
                 SettingsSection(
@@ -111,9 +115,9 @@ fun PersonalScreen(
                     items = listOf(
                         SettingItem("Trung tâm trợ giúp", Icons.Default.Help),
                         SettingItem("Liên hệ", Icons.Default.ContactSupport),
-                        SettingItem("Đánh giá ứng dụng", Icons.Default.Star),
                         SettingItem("Về chúng tôi", Icons.Default.Info)
-                    )
+                    ),
+                    navController = navController
                 )
 
                 // Secret Admin Button - Click 5 times to access
@@ -173,7 +177,8 @@ fun ProfileHeader(
     username: String = "Người dùng",
     email: String = "",
     avatarUrl: String = "",
-    createdAt: Long = 0L
+    createdAt: Long = 0L,
+    onEditClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -233,9 +238,9 @@ fun ProfileHeader(
                 }
             }
 
-            // Edit Button
+            // Edit Button with onClick
             IconButton(
-                onClick = { }
+                onClick = onEditClick
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -259,7 +264,8 @@ private fun formatMemberSince(timestamp: Long): String {
 @Composable
 fun SettingsSection(
     title: String,
-    items: List<SettingItem>
+    items: List<SettingItem>,
+    navController: NavController? = null
 ) {
     Column {
         Text(
@@ -280,7 +286,29 @@ fun SettingsSection(
                 items.forEachIndexed { index, item ->
                     SettingsItemRow(
                         item = item,
-                        showDivider = index < items.size - 1
+                        showDivider = index < items.size - 1,
+                        onClick = {
+                            // Handle item click navigation
+                            when (item.title) {
+                                "Thông tin cá nhân" -> navController?.navigate("settings/profile_info")
+                                "Thông báo" -> navController?.navigate("settings/notification")
+                                "Tải xuống" -> {
+                                    // Navigate to Library tab properly to preserve bottom bar state
+                                    navController?.navigate("library") {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                                "Giao diện" -> navController?.navigate("settings/theme")
+                                "Ngôn ngữ" -> navController?.navigate("settings/language")
+                                "Trung tâm trợ giúp" -> navController?.navigate("settings/help_center")
+                                "Liên hệ" -> navController?.navigate("settings/contact")
+                                "Về chúng tôi" -> navController?.navigate("settings/about")
+                            }
+                        }
                     )
                 }
             }
@@ -291,12 +319,14 @@ fun SettingsSection(
 @Composable
 fun SettingsItemRow(
     item: SettingItem,
-    showDivider: Boolean = true
+    showDivider: Boolean = true,
+    onClick: () -> Unit = {}
 ) {
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { onClick() }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
