@@ -27,6 +27,25 @@ class BookViewModel : ViewModel() {
     private val _featuredBooks = MutableStateFlow<List<Book>>(emptyList())
     val featuredBooks: StateFlow<List<Book>> = _featuredBooks.asStateFlow()
 
+    // [MỚI] State cho các sections đã shuffle (chỉ tính 1 lần)
+    private val _recommendedBooks = MutableStateFlow<List<Book>>(emptyList())
+    val recommendedBooks: StateFlow<List<Book>> = _recommendedBooks.asStateFlow()
+
+    private val _topBooks = MutableStateFlow<List<Book>>(emptyList())
+    val topBooks: StateFlow<List<Book>> = _topBooks.asStateFlow()
+
+    private val _favoriteBooks = MutableStateFlow<List<Book>>(emptyList())
+    val favoriteBooks: StateFlow<List<Book>> = _favoriteBooks.asStateFlow()
+
+    private val _newBooks = MutableStateFlow<List<Book>>(emptyList())
+    val newBooks: StateFlow<List<Book>> = _newBooks.asStateFlow()
+
+    private val _kidsBooks = MutableStateFlow<List<Book>>(emptyList())
+    val kidsBooks: StateFlow<List<Book>> = _kidsBooks.asStateFlow()
+
+    private val _trendingBooks = MutableStateFlow<List<Book>>(emptyList())
+    val trendingBooks: StateFlow<List<Book>> = _trendingBooks.asStateFlow()
+
     // State cho loading
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -54,6 +73,35 @@ class BookViewModel : ViewModel() {
                 // Cũng load featured books
                 val featured = books.filter { it.rank in 1..10 || books.indexOf(it) < 10 }
                 _featuredBooks.value = featured.take(10)
+
+                // [MỚI] Tính toán các sections CHỈ 1 LẦN khi load data
+                if (_recommendedBooks.value.isEmpty()) {
+                    _recommendedBooks.value = books.filter { it.rating >= 4.0 }.shuffled().take(10)
+                }
+
+                if (_topBooks.value.isEmpty()) {
+                    _topBooks.value = books.sortedByDescending { it.rating }.take(10)
+                }
+
+                if (_favoriteBooks.value.isEmpty()) {
+                    _favoriteBooks.value = books.filter { it.rating >= 4.5 }.take(10)
+                }
+
+                if (_newBooks.value.isEmpty()) {
+                    _newBooks.value = books.shuffled().take(10)
+                }
+
+                if (_kidsBooks.value.isEmpty()) {
+                    _kidsBooks.value = books.filter {
+                        it.title.contains("thiếu nhi", ignoreCase = true) ||
+                        it.author.contains("thiếu nhi", ignoreCase = true) ||
+                        it.title.contains("trẻ em", ignoreCase = true)
+                    }.take(10)
+                }
+
+                if (_trendingBooks.value.isEmpty()) {
+                    _trendingBooks.value = books.filter { it.rating >= 4.2 }.shuffled().take(10)
+                }
 
             } catch (e: Exception) {
                 _error.value = "Lỗi khi tải sách: ${e.message}"
@@ -172,4 +220,3 @@ class BookViewModel : ViewModel() {
         loadCategories()
     }
 }
-

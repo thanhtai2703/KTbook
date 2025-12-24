@@ -1,6 +1,7 @@
 package com.kienvo.rosach.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -29,7 +30,7 @@ fun KidsScreen(navController: NavController) {
     val stories = SampleData.kidsStories
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // [LỚP 1] BACKGROUND IMAGE (Giữ nguyên)
+        // [LỚP 1] BACKGROUND IMAGE
         Image(
             painter = painterResource(id = R.drawable.kids_background_image),
             contentDescription = null,
@@ -37,24 +38,23 @@ fun KidsScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // [LỚP 2] BỐ CỤC CHIA CẮT
+        // [LỚP 2] BỐ CỤC
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
         ) {
-            // --- PHẦN 1: COMPACT HEADER (Cố định & Nhỏ gọn) ---
+            // --- HEADER ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp), // Khoảng cách nhỏ với nội dung bên dưới
+                    .padding(bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Hàng chứa nút Back
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(38.dp) // [THU NHỎ] Giảm chiều cao từ 56dp -> 48dp
+                        .height(38.dp)
                 ) {
                     IconButton(
                         onClick = { navController.popBackStack() },
@@ -64,24 +64,21 @@ fun KidsScreen(navController: NavController) {
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp) // [THU NHỎ] Icon nhỏ lại chút
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
-                // Tiêu đề chính
                 Text(
                     text = "Truyện thiếu nhi",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp, // [THU NHỎ] Giảm font từ 28sp -> 24sp cho gọn
-                    modifier = Modifier.padding(bottom = 4.dp) // Sát lề dưới hơn
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
-
-                // Đã XÓA Subtitle ở đây
             }
 
-            // --- PHẦN 2: CONTENT CUỘN ---
+            // --- LIST ---
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -89,9 +86,9 @@ fun KidsScreen(navController: NavController) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // Chiếm toàn bộ phần còn lại
+                    .weight(1f)
             ) {
-                // [MỚI] ITEM 1: Subtitle (Đưa xuống đây để cuộn theo danh sách)
+                // Subtitle
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         text = "Những câu chuyện đẹp và hay cho bé",
@@ -100,27 +97,34 @@ fun KidsScreen(navController: NavController) {
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 24.dp) // Cách xa phần danh sách bên dưới
+                            .padding(bottom = 24.dp)
                     )
                 }
 
-                // ITEM 2: Tiêu đề Section
+                // Section Title
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         "Tất cả truyện thiếu nhi",
                         color = Color.White,
-                        fontSize = 18.sp, // Giảm nhẹ font section cho cân đối
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
-                // ITEM 3: Danh sách truyện
-                items(stories) { story ->
-                    KidsStoryCard(story)
+                // [ĐÃ SỬA] Danh sách truyện với Navigation
+                items(stories) { book ->
+                    // Bọc KidsStoryCard trong Box để bắt sự kiện click
+                    Box(
+                        modifier = Modifier.clickable {
+                            // Điều hướng sang màn hình KidBookDetailScreen
+                            navController.navigate("kid_detail/${book.id}")
+                        }
+                    ) {
+                        KidsStoryCard(book)
+                    }
                 }
 
-                // Spacer dưới cùng
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(modifier = Modifier.height(20.dp))
                 }

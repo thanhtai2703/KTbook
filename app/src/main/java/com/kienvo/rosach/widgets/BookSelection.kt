@@ -22,7 +22,8 @@ fun BookSection(
     books: List<Book>,
     onBookClick: (String) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sourceKey: String = "default" // [MỚI] Nhận sourceKey từ bên ngoài
 ) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         // 1. Tiêu đề kệ
@@ -43,7 +44,8 @@ fun BookSection(
                     book = book,
                     onBookClick = onBookClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedVisibilityScope = animatedVisibilityScope
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    sourceKey = sourceKey // [MỚI] Truyền sourceKey vào BookCard
                 )
             }
         }

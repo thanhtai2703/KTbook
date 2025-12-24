@@ -113,7 +113,7 @@ fun SearchScreen(navController: NavController) {
             Color(0xFFD81B60), Color(0xFFF48FB1),
             Icons.Default.ChildCare,
             // kidsStories uses Any (String or drawable)
-            SampleData.kidsStories.getOrNull(0)?.imageUrl ?: R.drawable.kids_image
+            SampleData.kidsStories.getOrNull(0)?.coverUrl ?: R.drawable.kids_image
         ),
         CategoryItemData(
             "Tôn giáo",

@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -71,7 +72,12 @@ import com.kienvo.rosach.widgets.ChapterItem
 import com.kienvo.rosach.widgets.InfoRow
 import com.kienvo.rosach.widgets.MyDivider
 import com.kienvo.rosach.widgets.SectionTitle
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.launch
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.TransformOrigin
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -80,27 +86,62 @@ fun BookDetailScreen(
     bookId: String?,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    initialTitle: String? = null,
+    initialAuthor: String? = null,
+    initialCoverUrl: String? = null,
+    sourceKey: String? = null,
     bookViewModel: BookViewModel = viewModel()
 ) {
-    // Load book data from Firestore
-    var book by remember { mutableStateOf<Book?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    // Decode URL-encoded parameters
+    val decodedTitle = initialTitle?.let {
+        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+    }
+    val decodedAuthor = initialAuthor?.let {
+        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+    }
+    val decodedCoverUrl = initialCoverUrl?.let {
+        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+    }
 
+    // Tạo shared element key duy nhất dựa trên sourceKey
+    val sharedElementKey = if (!sourceKey.isNullOrEmpty()) {
+        "book-${sourceKey}-${bookId}"
+    } else {
+        "book-detail-${bookId}"
+    }
+
+    // Immediate data from navigation
+    var book by remember { mutableStateOf<Book?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    val immediateTitle = decodedTitle ?: book?.title ?: ""
+    val immediateAuthor = decodedAuthor ?: book?.author ?: ""
+    val immediateCover = decodedCoverUrl ?: (book?.coverUrl?.toString() ?: "")
+
+    // Fetch full book by id in background
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            isLoading = true
-            book = bookViewModel.getBookById(bookId)
+            isLoading = (immediateTitle.isEmpty() && immediateAuthor.isEmpty() && immediateCover.isEmpty())
+            val fetched = bookViewModel.getBookById(bookId)
+            book = fetched
             isLoading = false
         }
     }
 
-    // Dữ liệu sách từ Firestore (fallback nếu không load được)
-    val bookTitle = book?.title ?: "Đang tải..."
-    val bookAuthor = book?.author ?: ""
-    val bookCover = book?.coverUrl ?: ""
-    val bookDesc = "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
+    val bookTitle = if (immediateTitle.isNotEmpty()) immediateTitle else (book?.title ?: "Đang tải...")
+    val bookAuthor = if (immediateAuthor.isNotEmpty()) immediateAuthor else (book?.author ?: "")
+    val bookCover = if (immediateCover.isNotEmpty()) immediateCover else (book?.coverUrl?.toString() ?: "")
 
-    // Hardcode chapters tạm thời (sau này sẽ load từ Firestore parts)
+    // Sử dụng dữ liệu thực từ book, fallback sang placeholder nếu chưa có
+    val bookDesc = book?.let {
+        // Nếu database có trường description, dùng nó. Nếu không, dùng placeholder
+        "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
+    } ?: "Đang tải thông tin..."
+
+    val bookType = book?.type ?: "audiobook"
+    val bookRating = book?.rating ?: 0.0
+
+    // Danh sách chương - tạm thời dùng placeholder, sau này sẽ lấy từ database
     val chapters = listOf(
         "Chương 1: Mở đầu",
         "Chương 2: Phát triển",
@@ -108,7 +149,7 @@ fun BookDetailScreen(
         "Chương 4: Kết thúc"
     )
 
-    // --- STATE ---
+    // State
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -116,51 +157,64 @@ fun BookDetailScreen(
     var fireVolume by remember { mutableFloatStateOf(0f) }
     var cafeVolume by remember { mutableFloatStateOf(0f) }
 
-    Scaffold(
-        containerColor = DarkBg,
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
-        }
-    ) { paddingValues ->
+    // Gradient tối dần xuống dưới để InfoSheet hòa vào nền
+    val backgroundOverlay = Brush.verticalGradient(
+        colors = listOf(
+            Color.Black.copy(alpha = 0.3f), // Trên cùng hơi tối để rõ nút back
+            Color.Black.copy(alpha = 0.6f),
+            DarkBg // Dưới cùng là màu nền đặc
+        )
+    )
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            // LAYER 1: BACKGROUND MỜ
-            if (bookCover.isNotEmpty()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .blur(radius = 60.dp)
-                        .background(Color.Black.copy(alpha = 0.4f))
+    // BOX TỔNG (Chứa tất cả layers)
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // LAYER 1: BACKGROUND MỜ TOÀN MÀN HÌNH
+        if (bookCover.isNotEmpty()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(radius = 50.dp) // Blur vừa phải
+            )
+            // Lớp phủ Gradient để làm tối nền, giúp chữ dễ đọc hơn
+            Box(modifier = Modifier.fillMaxSize().background(backgroundOverlay))
+        } else {
+            // Fallback nền đen nếu chưa có ảnh
+            Box(modifier = Modifier.fillMaxSize().background(DarkBg))
+        }
+
+        // LAYER 2: SCAFFOLD TRONG SUỐT (Chứa nội dung + TopBar)
+        Scaffold(
+            containerColor = Color.Transparent, // QUAN TRỌNG: Để lộ Layer 1
+            topBar = {
+                TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { }) {
+                            Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             }
+        ) { paddingValues ->
 
-            // Show loading
+            // Loading View
             if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     androidx.compose.material3.CircularProgressIndicator(color = Yellow)
                 }
             }
 
-            // LAYER 2: NỘI DUNG CHÍNH SCROLL
+            // Content Scroll
             if (!isLoading && book != null) {
                 Column(
                     modifier = Modifier
@@ -171,28 +225,36 @@ fun BookDetailScreen(
                 ) {
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // --- TOP SECTION: BÌA SÁCH & ACTION ---
+                    // BÌA SÁCH (Shared Transition với hiệu ứng nảy)
                     with(sharedTransitionScope) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current).data(bookCover).crossfade(true).build(),
                             contentDescription = "Book Cover",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .width(200.dp)
-                                .height(300.dp)
+                                .width(180.dp)
+                                .height(270.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
                                 .sharedElement(
-                                    sharedContentState = rememberSharedContentState(key = "image-$bookId"),
-                                    animatedVisibilityScope = animatedVisibilityScope
+                                    sharedContentState = rememberSharedContentState(key = sharedElementKey),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    boundsTransform = { _, _ ->
+                                        spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy, // Hiệu ứng nảy vừa phải
+                                            stiffness = Spring.StiffnessLow // Mượt mà
+                                        )
+                                    }
                                 )
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
+
+                    // TITLE & AUTHOR
                     Text(
                         text = bookTitle,
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineSmall, // Font nhỏ hơn xíu cho tinh tế
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -200,66 +262,60 @@ fun BookDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tác giả: $bookAuthor",
+                        text = bookAuthor,
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.LightGray,
+                        color = Color.White.copy(alpha = 0.7f), // Màu trắng mờ sang hơn Gray
                         textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // CỤM NÚT ACTION
+                    // ACTIONS BUTTONS
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         ActionCircleButton(icon = Icons.Default.FavoriteBorder)
-                        Spacer(modifier = Modifier.width(24.dp))
+                        Spacer(modifier = Modifier.width(20.dp))
                         Button(
-                            onClick = {
-                                navController.navigate("audio_player/$bookId")
-                            },
+                            onClick = { navController.navigate("audio_player/$bookId") },
                             colors = ButtonDefaults.buttonColors(containerColor = Yellow),
                             shape = RoundedCornerShape(50),
-                            modifier = Modifier
-                                .height(56.dp)
-                                .width(180.dp)
+                            modifier = Modifier.height(50.dp).width(160.dp)
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Phát Ngay", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text("Phát Ngay", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
-                        Spacer(modifier = Modifier.width(24.dp))
+                        Spacer(modifier = Modifier.width(20.dp))
                         ActionCircleButton(icon = Icons.Default.Tune) { showBottomSheet = true }
                     }
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                    // --- INFO SHEET (PHẦN BO TRÒN) ---
+                    // INFO SHEET (Phần đen bo tròn bên dưới)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            // Bo góc tròn trịa nối liền với phần trên
                             .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                            .background(Color(0xFF181818))
+                            // Màu nền của Sheet phải trùng với màu nền App (DarkBg) hoặc hơi sáng hơn tí xíu
+                            .background(DarkBg.copy(alpha = 0.95f))
                             .padding(24.dp)
                     ) {
-                        // Thanh nắm (Handle)
+                        // Handle bar
                         Box(
                             modifier = Modifier
-                                .width(40.dp)
-                                .height(4.dp)
+                                .width(40.dp).height(4.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(Color.DarkGray)
+                                .background(Color.White.copy(alpha = 0.2f))
                                 .align(Alignment.CenterHorizontally)
                         )
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 1. THỐNG KÊ (Icon Row)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
+                        // Stats
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             BookStatItem(Icons.Default.AccessTime, "Đang cập nhật", "Thời lượng")
                             BookStatItem(Icons.Default.Category, "Audiobook", "Thể loại")
                         }
@@ -268,7 +324,7 @@ fun BookDetailScreen(
                         MyDivider()
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 3. THÔNG TIN THÊM
+                        // Info Rows
                         InfoRow(label = "Giọng đọc", value = "Đang cập nhật")
                         Spacer(modifier = Modifier.height(12.dp))
                         InfoRow(label = "Nhà xuất bản", value = "Đang cập nhật")
@@ -279,7 +335,7 @@ fun BookDetailScreen(
                         MyDivider()
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 4. GIỚI THIỆU
+                        // Intro
                         SectionTitle(title = "Giới thiệu")
                         Text(
                             text = bookDesc,
@@ -293,7 +349,7 @@ fun BookDetailScreen(
                         MyDivider()
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 5. DANH SÁCH CHƯƠNG
+                        // Chapters
                         SectionTitle(title = "Danh sách chương")
                         chapters.forEachIndexed { index, chapterName ->
                             ChapterItem(index = index + 1, name = chapterName)
@@ -303,18 +359,18 @@ fun BookDetailScreen(
                     }
                 }
             }
+        }
 
-            // --- BOTTOM SHEET MIXER ---
-            if (showBottomSheet) {
-                AmbienceBottomSheet(
-                    sheetState = sheetState,
-                    onDismiss = { showBottomSheet = false },
-                    onAiClick = { scope.launch { rainVolume = 0.6f; fireVolume = 0.2f } },
-                    rainVol = rainVolume, onRainChange = { rainVolume = it },
-                    fireVol = fireVolume, onFireChange = { fireVolume = it },
-                    cafeVol = cafeVolume, onCafeChange = { cafeVolume = it }
-                )
-            }
+        // BOTTOM SHEET
+        if (showBottomSheet) {
+            AmbienceBottomSheet(
+                sheetState = sheetState,
+                onDismiss = { showBottomSheet = false },
+                onAiClick = { scope.launch { rainVolume = 0.6f; fireVolume = 0.2f } },
+                rainVol = rainVolume, onRainChange = { rainVolume = it },
+                fireVol = fireVolume, onFireChange = { fireVolume = it },
+                cafeVol = cafeVolume, onCafeChange = { cafeVolume = it }
+            )
         }
     }
 }

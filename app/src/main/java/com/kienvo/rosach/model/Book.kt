@@ -6,7 +6,7 @@ data class Book(
     val id: String,
     val title: String,
     val author: String,
-    val coverUrl: String,
+    val coverUrl: Any,
     val type: String = "audiobook", // "audiobook" hoặc "ebook"
     val rating: Double = 0.0,
     val rank: Int = 0 // Rank cho top ebooks, 0 nếu không có

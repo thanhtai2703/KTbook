@@ -70,7 +70,7 @@ fun EbookBanner() {
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Đọc sách không giới hạn với gói\nhội viên Ebook.",
+                        "Tri thức là sức mạnh, kiến thức quý hơn vàng. Khám phá kho sách ebook đồ sộ với hơn 100 bài học quý giá.",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 13.sp,
                         lineHeight = 18.sp

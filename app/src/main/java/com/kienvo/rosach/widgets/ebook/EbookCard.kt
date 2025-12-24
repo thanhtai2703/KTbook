@@ -2,6 +2,7 @@ package com.kienvo.rosach.widgets.ebook
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,14 +29,15 @@ import com.kienvo.rosach.ui.theme.AppColors
  * Thiết kế: Ảnh dọc + Rating
  */
 @Composable
-fun EbookCard(book: Book) {
+fun EbookCard(book: Book, onClick: () -> Unit = {}) {
     val cardWidth = 148.dp
     val cardHeight = 275.dp
 
     Surface(
         modifier = Modifier
             .width(cardWidth)
-            .height(cardHeight),
+            .height(cardHeight)
+            .clickable { onClick() }, // Thêm clickable
         shape = RoundedCornerShape(12.dp),
         color = AppColors.EbookBookCardColor,
         border = BorderStroke(1.dp, AppColors.EbookBorderThin)

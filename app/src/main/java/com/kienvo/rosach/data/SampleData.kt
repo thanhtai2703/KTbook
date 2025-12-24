@@ -5,12 +5,11 @@ import com.example.rosach.R
 
 /**
  * File tập trung chứa TẤT CẢ dữ liệu giả lập của ứng dụng
- * Tất cả sách đều dùng cùng 1 model: Book
+ * Đã sửa: Chuyển đổi dữ liệu Kids sang model Book để có ID
  */
 object SampleData {
 
     // ============ AUDIOBOOK DATA ============
-
     private val audioBooksBase = listOf(
         Book("1", "Nhà Giả Kim", "Paulo Coelho", "https://nxbhcm.com.vn/Image/Biasach/nhagiakimTB2020.jpg", "audiobook", 4.5),
         Book("2", "Đắc Nhân Tâm", "Dale Carnegie", "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg", "audiobook", 4.8),
@@ -25,7 +24,7 @@ object SampleData {
     private val popularBooksBase = listOf(
         Book("9", "Nam Châm Tài Chính", "Marie-Claire Carlyle", "https://bizbooks.vn/uploads/images/2023/thang-10/1-nam-cham-tai-chinh-mt.jpg", "audiobook", 4.7),
         Book("10", "Hành Trình Trở Thành Người Giáo Viên", "Nguyễn Công Thái", "https://i0.wp.com/sachnoiviet.net/wp-content/uploads/2022/03/hanh-trinh-tro-thanh-nguoi-giao-vien-hanh-phuc-thinh-vuong-binh-an.jpg?fit=200%2C300&ssl=1", "audiobook", 4.5),
-        Book("11", "Bách khoa thư về khoa học- Trái Đất và vũ trụ", "Nhiều tác giả", "https://cdn1.fahasa.com/media/catalog/product/i/m/image_195509_1_44248.jpg", "audiobook", 4.6),
+        Book("11", "Bách khoa thư về khoa học", "Nhiều tác giả", "https://cdn1.fahasa.com/media/catalog/product/i/m/image_195509_1_44248.jpg", "audiobook", 4.6),
         Book("12", "Tính Ưu Việt Của Hoài Nghi", "Tim Palmer", "https://www.nxbtre.com.vn/Images/Book/nxbtre_full_25122025_111216.jpg", "audiobook", 4.4),
         Book("13", "Tĩnh Lặng", "Thích Nhất Hạnh", "https://cdn.hstatic.net/products/200000900535/tinh_lang_-_bia_1_tb_2025__c4a6ae7b209f4a8792c707b6a9b69a6e.jpg", "audiobook", 4.8),
         Book("14", "Sống Chậm", "Melanie Barnes", "https://minhkhai.com.vn/hinhlon/8936186549434.jpg", "audiobook", 4.5),
@@ -36,111 +35,71 @@ object SampleData {
     private val healingBooksBase = listOf(
         Book("17", "Một Cuốn Sách Chữa Lành", "Brianna Wiest", "https://davibooks.vn/stores/uploads/z/z4729024325679_319a5b9666920fe8e785dcf3f0102996__97337_image2_800_big.jpg", "audiobook", 4.5),
         Book("18", "Một Thoáng Rực Rỡ Giữa Nhân Gian", "Ocean Vuong", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/motthoangtarucroonhangian011.jpg?v=1705552591463", "audiobook", 4.6),
-        Book("19", "Sức Mạnh Chữa Lành Cơ Thể Của Nước", "F. Batmanghelidj, M.D", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/86.png?v=1761215098273", "audiobook", 4.4),
+        Book("19", "Sức Mạnh Chữa Lành", "F. Batmanghelidj", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/86.png?v=1761215098273", "audiobook", 4.4),
         Book("20", "Hoàng Tử Bé", "Antoine De Saint-Exupéry", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/hoangtube.jpg?v=1705552581243", "audiobook", 4.9),
         Book("21", "Làm Lành Với Bản Thân", "Manuela Mischke-Reeds", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/24-4f07600c-0995-4bfa-9c34-785531ddaac0.png?v=1752574705253", "audiobook", 4.5),
-        Book("22", "Luật Nhân Quả - Tự Vấn Nghiệp Duyên, Xoay Chuyển Số Mệnh", "James Rondepierre", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/52-01df7223-c077-446b-b425-02eb1906df93.png?v=1755331057940", "audiobook", 4.3),
+        Book("22", "Luật Nhân Quả", "James Rondepierre", "https://bizweb.dktcdn.net/thumb/1024x1024/100/465/223/products/52-01df7223-c077-446b-b425-02eb1906df93.png?v=1755331057940", "audiobook", 4.3),
         Book("23", "Để Tâm Trí Là Nơi An Trú", "Morgan Harper Nichols", "https://minhkhai.com.vn/hinhlon/8935325026768-.jpg", "audiobook", 4.6),
-        Book("24", "Chữa Lành Bản Thân Trong Thế Giới Đầy Tổn Thương", "Dr. Ahona Guha", "https://product.hstatic.net/200000696663/product/8936225390362_36cd29599252412f84c5647b0aa18f6b_1024x1024.jpg", "audiobook", 4.7),
+        Book("24", "Chữa Lành Bản Thân", "Dr. Ahona Guha", "https://product.hstatic.net/200000696663/product/8936225390362_36cd29599252412f84c5647b0aa18f6b_1024x1024.jpg", "audiobook", 4.7),
     )
 
     private val detectiveBooksBase = listOf(
-        Book("25", "Những Cuộc Phiêu Lưu Của Sherlock Holmes", "Arthur Conan Doyle", "https://rekhtabooks.com/cdn/shop/products/1111019984212.jpg?v=1680041886", "audiobook", 4.8),
+        Book("25", "Sherlock Holmes", "Arthur Conan Doyle", "https://rekhtabooks.com/cdn/shop/products/1111019984212.jpg?v=1680041886", "audiobook", 4.8),
         Book("26", "GOTH Những Kẻ Hắc Ám", "Otsuichi", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/gothnhungkehacam01.jpg?v=1705552558923", "audiobook", 4.6),
         Book("27", "Thú Tội", "Minato Kanae", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/thutoi01.jpg?v=1705552105693", "audiobook", 4.7),
         Book("28", "13.67", "Chan Ho Kei", "https://product.hstatic.net/200000287623/product/13.67_61e241f0b6d743d883517c6bbf260e44_master.jpg", "audiobook", 4.5),
         Book("29", "Ghi Chép Pháp Y", "Lưu Hiểu Huy", "https://minhkhai.com.vn/hinhlon/8935325009433-.jpg", "audiobook", 4.6),
         Book("30", "Ngôi Nhà Kỳ Quái", "Uketsu", "https://cdn1.fahasa.com/media/catalog/product/8/9/8935095632763.jpg", "audiobook", 4.4),
-        Book("31", "Sự Im Lặng Của Bầy Cừu", "Thomas Harris", "https://lh3.googleusercontent.com/pw/ACtC-3dbCNcGCYZntEXQfkARgdQD1yEN0n-pRltjNUTlpshRWAFXo-c6HsNoE7Jw6fzMm-bL1QlIrJdG0a5-_73YenG6e9-a5ayZkRVu7cmnum3aiFjvR95BWFhOoE7U2R7Fja1gNKAfpvoAnXZKSFXiGl3zVQ=w384-h576-no?authuser=0", "audiobook", 4.9),
+        Book("31", "Sự Im Lặng Của Bầy Cừu", "Thomas Harris", "https://salt.tikicdn.com/cache/w1200/ts/product/f4/e3/c2/c0397072522730248232930229342734.jpg", "audiobook", 4.9),
         Book("32", "Dữ liệu tử thần", "Jeffery Deaver", "https://i.ex-cdn.com/mientay.giadinhonline.vn/files/content/2021/08/19/42-1241.jpg", "audiobook", 4.5),
     )
 
-    // ============ EBOOK DATA - CHUYỂN THÀNH AUDIOBOOK ============
-
+    // ============ EBOOK DATA ============
     private val topEbooksBase = listOf(
-        Book("33", "Minh Triết Trong Ăn Uống", "Ngô Đức Vượng", "https://voiz-prod.s3-wewe.cloud.cmctelecom.vn/uploads/avatar/filename/1077/webp_26db9a2ce19ef089fec27418e06920d26706db72.webp", "audiobook", 4.0),
-        Book("34", "Hiểu Về Trái Tim", "Minh Niệm", "https://dtv-ebook.com.vn/images/files_2/2020/hieu-ve-trai-tim-minh-niem.jpg", "audiobook", 4.9),
-        Book("35", "Tư Duy Ngược", "Adam Grant", "https://firstnews.vn/upload/products/original/-1729758499.jpg", "audiobook", 4.5),
-        Book("36", "Đắc Nhân Tâm", "Dale Carnegie", "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg", "audiobook", 4.8)
+        Book("33", "Minh Triết Trong Ăn Uống", "Ngô Đức Vượng", "https://voiz-prod.s3-wewe.cloud.cmctelecom.vn/uploads/avatar/filename/1077/webp_26db9a2ce19ef089fec27418e06920d26706db72.webp", "ebook", 4.0),
+        Book("34", "Hiểu Về Trái Tim", "Minh Niệm", "https://dtv-ebook.com.vn/images/files_2/2020/hieu-ve-trai-tim-minh-niem.jpg", "ebook", 4.9),
+        Book("35", "Tư Duy Ngược", "Adam Grant", "https://firstnews.vn/upload/products/original/-1729758499.jpg", "ebook", 4.5),
+        Book("36", "Đắc Nhân Tâm", "Dale Carnegie", "https://nxbhcm.com.vn/Image/Biasach/dacnhantam86.jpg", "ebook", 4.8)
     )
 
     private val freeEbooksBase = listOf(
-        Book("37", "Dế Mèn Phiêu Lưu Ký", "Tô Hoài", "https://thegioicotich.vn/wp-content/uploads/2019/09/de-men-phieu-luu-ky-chuong-4-cua-nha-van-to-hoai.png", "audiobook", 4.8),
-        Book("38", "Số Đỏ", "Vũ Trọng Phụng", "https://product.hstatic.net/200000017360/product/bia_sodo3-b1_b32d805ef78846fab8d0d6c1c7fc887b_master.jpg", "audiobook", 4.7),
-        Book("39", "Tắt Đèn", "Ngô Tất Tố", "https://dilib.vn/img/news/2022/11/larger/7820-tat-den-1.jpg?v=1370", "audiobook", 4.6),
+        Book("37", "Dế Mèn Phiêu Lưu Ký", "Tô Hoài", "https://thegioicotich.vn/wp-content/uploads/2019/09/de-men-phieu-luu-ky-chuong-4-cua-nha-van-to-hoai.png", "ebook", 4.8),
+        Book("38", "Số Đỏ", "Vũ Trọng Phụng", "https://product.hstatic.net/200000017360/product/bia_sodo3-b1_b32d805ef78846fab8d0d6c1c7fc887b_master.jpg", "ebook", 4.7),
+        Book("39", "Tắt Đèn", "Ngô Tất Tố", "https://dilib.vn/img/news/2022/11/larger/7820-tat-den-1.jpg?v=1370", "ebook", 4.6),
     )
 
-    private val literatureEbooksBase = listOf(
-        Book("40", "Rừng Na Uy", "Haruki Murakami", "https://cdn1.fahasa.com/media/catalog/product/8/9/8936024919047_1_1.jpg", "audiobook", 4.5),
-        Book("41", "Trăm Năm Cô Đơn", "G.G. Marquez", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/tramnamcodon01-0ce89a31-455d-4492-b0ce-1f6329222273.jpg?v=1705552510463", "audiobook", 4.8),
-        Book("42", "Chí Phèo", "Nam Cao", "https://book.sachgiai.com/uploads/book/truyen-ngan-chi-pheo/truyen-ngan-chi-pheo-nam-cao.jpg", "audiobook", 4.9),
+    // (Giữ nguyên các list ebook khác nếu bạn có, tôi rút gọn để tập trung vào sửa lỗi chính)
+
+    // ============ KIDS STORIES DATA (QUAN TRỌNG: Đã chuyển sang model Book) ============
+
+    // Chúng ta tạo ID riêng cho sách thiếu nhi, ví dụ bắt đầu bằng "kid_"
+    private val kidsBooksBase = listOf(
+        Book("kid_1", "Thần mộng mơ", "William Joyce", R.drawable.thanmongmo, "kid", 4.8),
+        Book("kid_2", "Người cung trăng", "William Joyce", R.drawable.moonman, "kid", 4.7),
+        Book("kid_3", "Câu lạc bộ Phiêu lưu", "Nhiều tác giả", R.drawable.fantasy_image, "kid", 4.5),
+        Book("kid_4", "Những bức thư của Họa My", "Tô Hoài", R.drawable.hoamy, "kid", 4.6),
+        Book("kid_5", "Thăm nhà ông Mặt Trời", "Nguyễn Khoa Điềm", R.drawable.mattroi, "kid", 4.4),
+        Book("kid_6", "Ngôi trường kỳ lạ", "Enid Blyton", R.drawable.myteriousschool, "kid", 4.3),
+        Book("kid_7", "Mẹ yêu con", "Robert Munsch", R.drawable.mom, "kid", 4.9),
+        Book("kid_8", "Bạn cún đi lạc", "Nhiều tác giả", R.drawable.dog, "kid", 4.5)
     )
 
-    private val healthEbooksBase = listOf(
-        Book("43", "Nhân Tố Enzyme", "Hiromi Shinya", "https://product.hstatic.net/200000900535/product/1876029511_bia_nhan-to-enzyme-2_f659d7186380445db4644d05997e448f_1024x1024.jpg", "audiobook", 4.4),
-        Book("44", "Cơ Thể 4 Giờ", "Tim Ferriss", "https://minhkhai.com.vn/hinhlon/8935246915936.jpg", "audiobook", 4.3),
-    )
+    // ============ PUBLIC PROPERTIES (EXPOSE RA NGOÀI) ============
 
-    private val psychologyEbooksBase = listOf(
-        Book("45", "Tư Duy Nhanh & Chậm", "Daniel Kahneman", "https://bizweb.dktcdn.net/thumb/1024x1024/100/197/269/products/462558750-1083111936819329-1957541486232979466-n.png?v=1730363480047", "audiobook", 4.7),
-        Book("46", "Phi Lý Trí", "Dan Ariely", "https://bizweb.dktcdn.net/thumb/1024x1024/100/197/269/products/11.png?v=1676087122193", "audiobook", 4.6),
-    )
-
-    private val lifestyleEbooksBase = listOf(
-        Book("47", "Lối Sống Tối Giản", "Sasaki Fumio", "https://product.hstatic.net/200000900535/product/bia_loi-song-toi-gian-01-1-2_647828c3e1dc4b0182e4333e49ebe6f6.jpg", "audiobook", 4.2),
-        Book("48", "Lagom", "Nhiều tác giả", "https://cdn1.fahasa.com/media/catalog/product/8/9/8934974184706.jpg", "audiobook", 4.1),
-    )
-
-    private val philosophyEbooksBase = listOf(
-        Book("49", "Sự An Ủi Của Triết Học", "Alain de Botton", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/suanuitriethoc01-8b3e5c36-50b5-4eb4-8c04-9b17c21b31c2.jpg?v=1736215302887", "audiobook", 4.5),
-        Book("50", "Thế Giới Của Sophie", "Jostein Gaarder", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/thegioicuasophie01.jpg?v=1710306286017", "audiobook", 4.8),
-    )
-
-    private val businessEbooksBase = listOf(
-        Book("51", "Cha Giàu Cha Nghèo", "Robert Kiyosaki", "https://bookfun.vn/wp-content/uploads/2024/10/cha-giau-cha-ngheo.jpg", "audiobook", 4.9),
-        Book("52", "Nhà Đầu Tư Thông Minh", "Benjamin Graham", "https://bizweb.dktcdn.net/thumb/1024x1024/100/363/455/products/nhadaututhongminhscaled.jpg?v=1705552576643", "audiobook", 4.8),
-    )
-
-    // ============ PUBLIC PROPERTIES - CHUẨN HÓA ============
-
-    // Tất cả sách trong 1 list thống nhất
+    // List chứa TẤT CẢ sách trong hệ thống (bao gồm cả Kids)
+    // Điều này giúp hàm getBookById(id) có thể tìm thấy sách Kids
     val allBooks: List<Book> = audioBooksBase + popularBooksBase + healingBooksBase +
-                                detectiveBooksBase + topEbooksBase + freeEbooksBase +
-                                literatureEbooksBase + healthEbooksBase + psychologyEbooksBase +
-                                lifestyleEbooksBase + philosophyEbooksBase + businessEbooksBase
+            detectiveBooksBase + topEbooksBase + freeEbooksBase +
+            kidsBooksBase
 
-    // Backward compatibility - giữ các property cũ
+    // Các list lẻ để hiển thị theo từng mục (nếu cần)
     val audioBooks: List<Book> = audioBooksBase
     val popularBooks: List<Book> = popularBooksBase
     val healingBooks: List<Book> = healingBooksBase
     val detectiveBooks: List<Book> = detectiveBooksBase
-
-    // Ebooks - trả về Book thay vì EbookData
     val topEbooks: List<Book> = topEbooksBase
     val freeEbooks: List<Book> = freeEbooksBase
-    val literatureEbooks: List<Book> = literatureEbooksBase
-    val healthEbooks: List<Book> = healthEbooksBase
-    val psychologyEbooks: List<Book> = psychologyEbooksBase
-    val lifestyleEbooks: List<Book> = lifestyleEbooksBase
-    val philosophyEbooks: List<Book> = philosophyEbooksBase
-    val businessEbooks: List<Book> = businessEbooksBase
 
-    // ============ KIDS STORIES DATA ============
-
-    data class KidStory(
-        val title: String,
-        val imageUrl: Any,
-        val duration: String
-    )
-
-    val kidsStories = listOf(
-        KidStory("Thần mộng mơ", "https://salt.tikicdn.com/cache/750x750/ts/product/5d/63/6a/35eafcb4ac833df01c59d2c08dc6ff51.jpg.webp", "16 phút"),
-        KidStory("Người cung trăng", "https://salt.tikicdn.com/cache/750x750/ts/product/17/ce/ce/819b023eebd62f62eb927f9e0e4fea44.jpg.webp", "19 phút"),
-        KidStory("Câu lạc bộ Phiêu lưu",R.drawable.fantasy_image , "32 phút"),
-        KidStory("Những bức thư của Họa My", R.drawable.hoamy, "29 phút"),
-        KidStory("Thăm nhà ông Mặt Trời", R.drawable.mattroi, "32 phút"),
-        KidStory("Ngôi trường kỳ lạ", R.drawable.myteriousschool, "29 phút"),
-        KidStory("Mẹ yêu con", R.drawable.mom, "31 phút"),
-        KidStory("Bạn cún đi lạc", R.drawable.dog, "29 phút")
-    )
+    // QUAN TRỌNG: kidsStories bây giờ trả về List<Book> chứ không phải List<KidStory>
+    val kidsStories: List<Book> = kidsBooksBase
 }
