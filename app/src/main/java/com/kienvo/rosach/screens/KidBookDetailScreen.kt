@@ -166,7 +166,7 @@ fun KidBookDetailScreen(
             Button(
                 onClick = {
                     // Chuyển sang màn hình Player
-                    navController.navigate("audio_player/${displayBook.id}")
+                    navController.navigate("kid_audio_player/${displayBook.id}")
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),

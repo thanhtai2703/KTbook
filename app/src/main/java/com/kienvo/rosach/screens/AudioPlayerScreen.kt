@@ -2,10 +2,9 @@ package com.kienvo.rosach.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.MoreVert
@@ -35,15 +34,17 @@ import com.kienvo.rosach.repository.BookRepository
 import com.kienvo.rosach.service.AudioPlayerService
 import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.viewmodel.BookViewModel
+import com.kienvo.rosach.viewmodel.PlayerViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioPlayerScreen(
     navController: NavController,
     bookId: String?,
-    bookViewModel: BookViewModel = viewModel()
+    bookViewModel: BookViewModel = viewModel(),
+    playerViewModel: PlayerViewModel = viewModel() // Thêm PlayerViewModel
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -73,12 +74,30 @@ fun AudioPlayerScreen(
             book = bookViewModel.getBookById(bookId)
             bookParts = bookRepository.getBookParts(bookId)
 
+            // Cập nhật vào PlayerViewModel
+            book?.let { playerViewModel.playBook(it) }
+
             // Load audio của part đầu tiên
             if (bookParts.isNotEmpty()) {
                 val firstPart = bookParts[0]
                 audioService.loadAudioFromUrl(firstPart.audioUrl)
             }
             isLoadingData = false
+        }
+    }
+
+    // Sync AudioPlayerService state với PlayerViewModel
+    LaunchedEffect(isPlaying) {
+        if (book != null) {
+            if (isPlaying) {
+                playerViewModel.playBook(book!!)
+            }
+        }
+    }
+
+    LaunchedEffect(currentPosition, duration) {
+        if (duration > 0) {
+            playerViewModel.updatePosition(currentPosition.toFloat() / duration.toFloat())
         }
     }
 
@@ -142,8 +161,11 @@ fun AudioPlayerScreen(
                 TopAppBar(
                     title = { Text("Đang phát", color = Color.White) },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        IconButton(onClick = {
+                            playerViewModel.minimizePlayer() // Thu nhỏ player thay vì đóng
+                            navController.popBackStack()
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
                     actions = {
@@ -342,5 +364,5 @@ private fun formatTime(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
-    return String.format("%d:%02d", minutes, seconds)
+    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }

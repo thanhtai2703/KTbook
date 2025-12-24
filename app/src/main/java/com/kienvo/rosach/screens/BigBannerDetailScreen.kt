@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -160,7 +161,12 @@ fun BigBannerDetailScreen(navController: NavController) {
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(topBooks) { book -> BookRankedCard(book) }
+                        items(topBooks) { book ->
+                            BookRankedCard(book, onClick = {
+                                // Navigate đến BookDetailScreen
+                                navController.navigate("detail/${book.rank}")
+                            })
+                        }
                     }
                 }
                 item { Spacer(Modifier.height(40.dp)) }
@@ -178,7 +184,11 @@ fun BigBannerDetailScreen(navController: NavController) {
                     ) { pageIndex ->
                         val booksInPage = chunkedWorldBooks.getOrNull(pageIndex) ?: emptyList()
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            booksInPage.forEach { book -> HorizontalBookCard(book) }
+                            booksInPage.forEach { book ->
+                                HorizontalBookCard(book, onClick = {
+                                    navController.navigate("detail/${book.id}")
+                                })
+                            }
                         }
                     }
                 }
@@ -200,8 +210,20 @@ fun BigBannerDetailScreen(navController: NavController) {
                         val row2 = booksInPage.drop(3).take(3)
 
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (row1.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { row1.forEach { VerticalBookCard(it) } }
-                            if (row2.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { row2.forEach { VerticalBookCard(it) } }
+                            if (row1.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                row1.forEach {
+                                    VerticalBookCard(it, onClick = {
+                                        navController.navigate("detail/${it.id}")
+                                    })
+                                }
+                            }
+                            if (row2.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                row2.forEach {
+                                    VerticalBookCard(it, onClick = {
+                                        navController.navigate("detail/${it.id}")
+                                    })
+                                }
+                            }
                         }
                     }
                 }
@@ -220,7 +242,11 @@ fun BigBannerDetailScreen(navController: NavController) {
                     ) { pageIndex ->
                         val booksInPage = chunkedDetectiveBooks.getOrNull(pageIndex) ?: emptyList()
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            booksInPage.forEach { book -> HorizontalBookCard(book) }
+                            booksInPage.forEach { book ->
+                                HorizontalBookCard(book, onClick = {
+                                    navController.navigate("detail/${book.id}")
+                                })
+                            }
                         }
                     }
                 }
@@ -242,8 +268,20 @@ fun BigBannerDetailScreen(navController: NavController) {
                         val row2 = booksInPage.drop(3).take(3)
 
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (row1.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { row1.forEach { VerticalBookCard(it) } }
-                            if (row2.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { row2.forEach { VerticalBookCard(it) } }
+                            if (row1.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                row1.forEach {
+                                    VerticalBookCard(it, onClick = {
+                                        navController.navigate("detail/${it.id}")
+                                    })
+                                }
+                            }
+                            if (row2.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                row2.forEach {
+                                    VerticalBookCard(it, onClick = {
+                                        navController.navigate("detail/${it.id}")
+                                    })
+                                }
+                            }
                         }
                     }
                 }
@@ -258,7 +296,7 @@ fun BigBannerDetailScreen(navController: NavController) {
 
 // 1. CARD TOP CHART (ĐÃ SỬA: Ảnh tràn viền, bỏ số thứ tự)
 @Composable
-private fun BookRankedCard(book: BookRanked) {
+private fun BookRankedCard(book: BookRanked, onClick: () -> Unit = {}) {
     val cardWidth = 160.dp
     // Tăng chiều cao lên một chút cho cân đối khi ảnh tràn viền
     val cardHeight = 220.dp
@@ -267,7 +305,8 @@ private fun BookRankedCard(book: BookRanked) {
     Card(
         modifier = Modifier
             .width(cardWidth)
-            .height(cardHeight),
+            .height(cardHeight)
+            .clickable { onClick() }, // Thêm clickable
         shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = BookCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -351,10 +390,16 @@ private fun BookRankedCard(book: BookRanked) {
 
 // 2. CARD NGANG (Giữ nguyên - Không badge Level)
 @Composable
-private fun HorizontalBookCard(book: Book) {
+private fun HorizontalBookCard(book: Book, onClick: () -> Unit = {}) {
     val randomRating = 4.8
     val randomReview = (10..99).random()
-    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clickable { onClick() }, // Thêm clickable
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Box(modifier = Modifier.width(70.dp).height(100.dp).clip(RoundedCornerShape(6.dp))) {
             AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(book.coverUrl).crossfade(true).build(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
@@ -379,13 +424,21 @@ private fun HorizontalBookCard(book: Book) {
 
 // 3. CARD ĐỨNG NHỎ (Giữ nguyên - Không badge Level)
 @Composable
-private fun VerticalBookCard(book: Book) {
+private fun VerticalBookCard(book: Book, onClick: () -> Unit = {}) {
     val cardWidth = 105.dp
     val cardHeight = 165.dp
     val cardShape = RoundedCornerShape(12.dp)
     val randomRating = 4.9
     val randomReview = (5..20).random()
-    Card(modifier = Modifier.width(cardWidth).height(cardHeight), shape = cardShape, colors = CardDefaults.cardColors(containerColor = BookCard), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+    Card(
+        modifier = Modifier
+            .width(cardWidth)
+            .height(cardHeight)
+            .clickable { onClick() }, // Thêm clickable
+        shape = cardShape,
+        colors = CardDefaults.cardColors(containerColor = BookCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(book.coverUrl).crossfade(true).build(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Black.copy(0.9f)), startY = 250f)))

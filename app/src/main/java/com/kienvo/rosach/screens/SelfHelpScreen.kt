@@ -168,7 +168,10 @@ fun SelfHelpScreen(navController: NavController) {
                                 author = book.author,
                                 coverUrl = book.coverUrl.toString(),
                                 rating = book.rating,
-                                reviewCount = 104
+                                reviewCount = 104,
+                                onClick = {
+                                    navController.navigate("detail/${book.id}")
+                                }
                             )
                         }
                     }
@@ -184,7 +187,9 @@ fun SelfHelpScreen(navController: NavController) {
                                 coverUrl = book.coverUrl.toString(),
                                 rating = book.rating,
                                 reviewCount = 104,
-                                onClick = {}
+                                onClick = {
+                                    navController.navigate("detail/${book.id}")
+                                }
                             )
                             Spacer(Modifier.height(24.dp))
                         }
@@ -202,12 +207,13 @@ private fun BookGridItem(
     author: String,
     coverUrl: String,
     rating: Double,
-    reviewCount: Int
+    reviewCount: Int,
+    onClick: () -> Unit = {} // Thêm onClick parameter
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Handle click */ }
+            .clickable { onClick() } // Thêm clickable
     ) {
         // Dùng Card để bo góc cả Ảnh và Thanh Rating bên dưới
         Card(
@@ -299,7 +305,7 @@ private fun BookListItem(
     coverUrl: String,
     rating: Double,
     reviewCount: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit // Giữ onClick parameter
 ) {
     // (Giữ nguyên code BookListItem cũ của bạn ở đây)
     // Tôi copy lại cho đầy đủ để bạn dễ paste

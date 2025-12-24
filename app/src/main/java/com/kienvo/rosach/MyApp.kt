@@ -11,6 +11,7 @@ import com.kienvo.rosach.navigation.AppNavigation
 import com.kienvo.rosach.ui.theme.FonosCloneTheme
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
+import com.kienvo.rosach.viewmodel.PlayerViewModel
 
 @Composable
 fun FonosApp() {
@@ -19,6 +20,7 @@ fun FonosApp() {
     // Shared ViewModels for the entire app
     val authViewModel: AuthViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
+    val playerViewModel: PlayerViewModel = viewModel() // Thêm PlayerViewModel
 
     val currentUser by authViewModel.currentUser.collectAsState()
 
@@ -38,7 +40,8 @@ fun FonosApp() {
     AppNavigation(
         navController = navController,
         authViewModel = authViewModel,
-        userViewModel = userViewModel
+        userViewModel = userViewModel,
+        playerViewModel = playerViewModel // Truyền PlayerViewModel vào
     )
 }
 
