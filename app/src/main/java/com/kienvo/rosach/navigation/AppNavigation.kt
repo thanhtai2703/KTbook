@@ -25,7 +25,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
@@ -42,11 +41,13 @@ import com.kienvo.rosach.screens.HomeScreen
 import com.kienvo.rosach.screens.KidAudioPlayerScreen
 import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
+import com.kienvo.rosach.screens.LibraryScreen
 import com.kienvo.rosach.screens.SelfHelpScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
 import com.kienvo.rosach.viewmodel.PlayerViewModel
-
+import com.kienvo.rosach.viewmodel.LibraryViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -63,6 +64,9 @@ fun AppNavigation(
     userViewModel: UserViewModel,
     playerViewModel: PlayerViewModel // Thêm PlayerViewModel
 ) {
+    // Tạo shared LibraryViewModel instance
+    val libraryViewModel: LibraryViewModel = viewModel()
+
     // Tăng thời gian lên 400-500ms và thêm Easing để lướt mượt hơn
     val animDuration = 400
     val slideSpec = tween<IntOffset>(durationMillis = animDuration, easing = FastOutSlowInEasing)
@@ -262,6 +266,7 @@ fun AppNavigation(
                         BookDetailScreen(
                             navController = navController,
                             bookId = bookId,
+                            libraryViewModel = libraryViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this
                         )
@@ -288,6 +293,7 @@ fun AppNavigation(
                         BookDetailScreen(
                             navController = navController,
                             bookId = id,
+                            libraryViewModel = libraryViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this,
                             initialTitle = title,
@@ -297,7 +303,13 @@ fun AppNavigation(
                         )
                     }
 
-                    composable("library") { PlaceholderScreen("Thư viện", navController) }
+                    composable("library") {
+                        LibraryScreen(
+                            navController = navController,
+                            libraryViewModel = libraryViewModel
+                        )
+                    }
+
                     composable(Screen.Ebook.route) { EbookScreen(navController) }
                     composable(Screen.Kids.route) { KidsScreen(navController) }
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
@@ -326,7 +338,7 @@ fun AppNavigation(
                         AudioPlayerScreen(
                             navController = navController,
                             bookId = bookId,
-                            playerViewModel = playerViewModel // Truyền PlayerViewModel vào
+                            playerViewModel = playerViewModel
                         )
                     }
 
