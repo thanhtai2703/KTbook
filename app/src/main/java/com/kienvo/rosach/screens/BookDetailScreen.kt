@@ -14,14 +14,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
@@ -39,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +68,7 @@ import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.viewmodel.BookViewModel
+import com.kienvo.rosach.viewmodel.LibraryViewModel
 import com.kienvo.rosach.widgets.ActionCircleButton
 import com.kienvo.rosach.widgets.AmbienceBottomSheet
 import com.kienvo.rosach.widgets.BookStatItem
@@ -77,7 +81,6 @@ import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.launch
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.ui.graphics.TransformOrigin
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -90,7 +93,8 @@ fun BookDetailScreen(
     initialAuthor: String? = null,
     initialCoverUrl: String? = null,
     sourceKey: String? = null,
-    bookViewModel: BookViewModel = viewModel()
+    bookViewModel: BookViewModel = viewModel(),
+    libraryViewModel: LibraryViewModel = viewModel()
 ) {
     // Decode URL-encoded parameters
     val decodedTitle = initialTitle?.let {
@@ -125,8 +129,15 @@ fun BookDetailScreen(
             val fetched = bookViewModel.getBookById(bookId)
             book = fetched
             isLoading = false
+
+            // Tự động thêm vào lịch sử khi mở DetailScreen
+            fetched?.let { libraryViewModel.addToHistory(it) }
         }
     }
+
+    // Check if book is in favorites
+    val isFavorite by libraryViewModel.favorites.collectAsState()
+    val isBookFavorite = isFavorite.any { it.id == bookId }
 
     val bookTitle = if (immediateTitle.isNotEmpty()) immediateTitle else (book?.title ?: "Đang tải...")
     val bookAuthor = if (immediateAuthor.isNotEmpty()) immediateAuthor else (book?.author ?: "")
@@ -194,7 +205,7 @@ fun BookDetailScreen(
                     title = {},
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
                     actions = {
@@ -276,10 +287,35 @@ fun BookDetailScreen(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        ActionCircleButton(icon = Icons.Default.FavoriteBorder)
+                        // Favorite Button with toggle functionality
+                        IconButton(
+                            onClick = {
+                                book?.let { libraryViewModel.toggleFavorite(it) }
+                            },
+                            modifier = Modifier
+                                .width(50.dp)
+                                .height(50.dp)
+                                .background(
+                                    color = if (isBookFavorite) Color(0xFF9D4EDD).copy(alpha = 0.2f) else Color.White.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(50)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = if (isBookFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorite",
+                                tint = if (isBookFavorite) Color(0xFF9D4EDD) else Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(20.dp))
                         Button(
-                            onClick = { navController.navigate("audio_player/$bookId") },
+                            onClick = {
+                                // Thêm vào Currently Listening khi bấm play
+                                book?.let {
+                                    libraryViewModel.addToCurrentlyListening(it, progress = 0f)
+                                }
+                                navController.navigate("audio_player/$bookId")
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = Yellow),
                             shape = RoundedCornerShape(50),
                             modifier = Modifier.height(50.dp).width(160.dp)
@@ -300,7 +336,7 @@ fun BookDetailScreen(
                             .fillMaxWidth()
                             // Bo góc tròn trịa nối liền với phần trên
                             .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                            // Màu nền của Sheet phải trùng với màu nền App (DarkBg) hoặc hơi sáng hơn tí xíu
+                            // Màu nền của Sheet phải trùng với màu n���n App (DarkBg) hoặc hơi sáng hơn tí xíu
                             .background(DarkBg.copy(alpha = 0.95f))
                             .padding(24.dp)
                     ) {
