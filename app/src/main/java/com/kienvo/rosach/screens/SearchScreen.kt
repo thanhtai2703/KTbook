@@ -242,6 +242,9 @@ fun SearchScreen(navController: NavController) {
                                     "Thiếu nhi" -> {
                                         navController.navigate(Screen.Kids.route)
                                     }
+                                    "Thiên văn" -> {
+                                        navController.navigate(Screen.Astronomy.route)
+                                    }
                                     "PodCourse", "Podcast", "Truyện ngủ\n& Nhạc" -> {
                                         navController.navigate("library") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }

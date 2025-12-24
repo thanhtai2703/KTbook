@@ -27,6 +27,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
+import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
+import com.kienvo.rosach.screens.AstronomyDetailScreen
+import com.kienvo.rosach.screens.AstronomyScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
@@ -85,7 +88,8 @@ fun AppNavigation(
 
     // Ẩn MiniPlayer khi đang ở màn hình player full screen
     val isInFullPlayer = currentRoute?.startsWith("audio_player") == true ||
-                         currentRoute?.startsWith("kid_audio_player") == true
+                         currentRoute?.startsWith("kid_audio_player") == true ||
+                         currentRoute?.startsWith("astronomy_audio_player") == true
 
     SharedTransitionLayout {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -106,10 +110,10 @@ fun AppNavigation(
                                 onMiniPlayerClick = {
                                     // Mở lại màn hình player full screen
                                     currentBook?.let { book ->
-                                        val route = if (book.type == "kid") {
-                                            "kid_audio_player/${book.id}"
-                                        } else {
-                                            "audio_player/${book.id}"
+                                        val route = when (book.type) {
+                                            "kid" -> "kid_audio_player/${book.id}"
+                                            "astronomy" -> "astronomy_audio_player/${book.id}"
+                                            else -> "audio_player/${book.id}"
                                         }
                                         navController.navigate(route)
                                     }
@@ -315,6 +319,7 @@ fun AppNavigation(
                     composable(Screen.Kids.route) { KidsScreen(navController) }
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
                     composable(Screen.Detective.route) { DetectiveScreen(navController) }
+                    composable(Screen.Astronomy.route) { AstronomyScreen(navController) }
                     composable("personal") { PersonalScreen(navController) }
                     composable("personal") {
                         PersonalScreen(
@@ -353,7 +358,8 @@ fun AppNavigation(
                             navController = navController,
                             bookId = bookId,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = this
+                            animatedVisibilityScope = this,
+                            libraryViewModel = libraryViewModel
                         )
                     }
 
@@ -373,6 +379,40 @@ fun AppNavigation(
                     composable(Screen.DataMigration.route) {
                         DataMigrationScreen(
                             onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    // --- MÀN HÌNH ASTRONOMY ---
+                    composable("astronomy") {
+                        AstronomyScreen(navController)
+                    }
+
+                    // Chi tiết sách thiên văn
+                    composable(
+                        route = "astronomy_detail/{bookId}",
+                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString("bookId")
+                        AstronomyDetailScreen(
+                            navController = navController,
+                            bookId = bookId,
+                            sharedTransitionScope = this@SharedTransitionLayout,
+                            animatedVisibilityScope = this,
+                            playerViewModel = playerViewModel,
+                            libraryViewModel = libraryViewModel
+                        )
+                    }
+
+                    // Player cho sách thiên văn
+                    composable(
+                        route = "astronomy_audio_player/{bookId}",
+                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString("bookId")
+                        AstronomyAudioPlayerScreen(
+                            navController = navController,
+                            bookId = bookId,
+                            playerViewModel = playerViewModel
                         )
                     }
                 }
