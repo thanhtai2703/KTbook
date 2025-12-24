@@ -236,6 +236,9 @@ fun SearchScreen(navController: NavController) {
                                             restoreState = true
                                         }
                                     }
+                                    "Trinh thám" -> {
+                                        navController.navigate(Screen.Detective.route)
+                                    }
                                     "Thiếu nhi" -> {
                                         navController.navigate(Screen.Kids.route)
                                     }

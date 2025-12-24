@@ -31,6 +31,7 @@ import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
 import com.kienvo.rosach.screens.DataMigrationScreen
+import com.kienvo.rosach.screens.DetectiveScreen
 import com.kienvo.rosach.screens.PersonalScreen
 import com.kienvo.rosach.screens.PlaceholderScreen
 import com.kienvo.rosach.screens.SearchScreen
@@ -313,6 +314,7 @@ fun AppNavigation(
                     composable(Screen.Ebook.route) { EbookScreen(navController) }
                     composable(Screen.Kids.route) { KidsScreen(navController) }
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
+                    composable(Screen.Detective.route) { DetectiveScreen(navController) }
                     composable("personal") { PersonalScreen(navController) }
                     composable("personal") {
                         PersonalScreen(

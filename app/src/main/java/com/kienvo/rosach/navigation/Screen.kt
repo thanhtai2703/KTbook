@@ -11,5 +11,6 @@ sealed class Screen(val route: String) {
     object Ebook : Screen("ebook")
     object Kids : Screen("kids")
     object SelfHelp : Screen("self_help")
+    object Detective : Screen("detective")
     object DataMigration : Screen("data_migration")
 }
