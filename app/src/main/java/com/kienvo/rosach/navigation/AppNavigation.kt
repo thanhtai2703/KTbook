@@ -25,13 +25,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
+import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
+import com.kienvo.rosach.screens.AstronomyDetailScreen
+import com.kienvo.rosach.screens.AstronomyScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
 import com.kienvo.rosach.screens.AuthScreen
 import com.kienvo.rosach.screens.BookDetailScreen
 import com.kienvo.rosach.screens.DataMigrationScreen
+import com.kienvo.rosach.screens.DetectiveScreen
 import com.kienvo.rosach.screens.PersonalScreen
 import com.kienvo.rosach.screens.PlaceholderScreen
 import com.kienvo.rosach.screens.SearchScreen
@@ -42,11 +45,20 @@ import com.kienvo.rosach.screens.HomeScreen
 import com.kienvo.rosach.screens.KidAudioPlayerScreen
 import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
+import com.kienvo.rosach.screens.LibraryScreen
 import com.kienvo.rosach.screens.SelfHelpScreen
+import com.kienvo.rosach.screens.settings.AboutScreen
+import com.kienvo.rosach.screens.settings.ContactScreen
+import com.kienvo.rosach.screens.settings.HelpCenterScreen
+import com.kienvo.rosach.screens.settings.LanguageScreen
+import com.kienvo.rosach.screens.settings.NotificationSettingsScreen
+import com.kienvo.rosach.screens.settings.ProfileInfoScreen
+import com.kienvo.rosach.screens.settings.ThemeSettingsScreen
 import com.kienvo.rosach.viewmodel.AuthViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
 import com.kienvo.rosach.viewmodel.PlayerViewModel
-
+import com.kienvo.rosach.viewmodel.LibraryViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val mainTabs = listOf("home", "search", "library", "personal", "active_search")
 
@@ -63,6 +75,9 @@ fun AppNavigation(
     userViewModel: UserViewModel,
     playerViewModel: PlayerViewModel // Thêm PlayerViewModel
 ) {
+    // Tạo shared LibraryViewModel instance
+    val libraryViewModel: LibraryViewModel = viewModel()
+
     // Tăng thời gian lên 400-500ms và thêm Easing để lướt mượt hơn
     val animDuration = 400
     val slideSpec = tween<IntOffset>(durationMillis = animDuration, easing = FastOutSlowInEasing)
@@ -80,7 +95,8 @@ fun AppNavigation(
 
     // Ẩn MiniPlayer khi đang ở màn hình player full screen
     val isInFullPlayer = currentRoute?.startsWith("audio_player") == true ||
-                         currentRoute?.startsWith("kid_audio_player") == true
+                         currentRoute?.startsWith("kid_audio_player") == true ||
+                         currentRoute?.startsWith("astronomy_audio_player") == true
 
     SharedTransitionLayout {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -101,10 +117,10 @@ fun AppNavigation(
                                 onMiniPlayerClick = {
                                     // Mở lại màn hình player full screen
                                     currentBook?.let { book ->
-                                        val route = if (book.type == "kid") {
-                                            "kid_audio_player/${book.id}"
-                                        } else {
-                                            "audio_player/${book.id}"
+                                        val route = when (book.type) {
+                                            "kid" -> "kid_audio_player/${book.id}"
+                                            "astronomy" -> "astronomy_audio_player/${book.id}"
+                                            else -> "audio_player/${book.id}"
                                         }
                                         navController.navigate(route)
                                     }
@@ -262,6 +278,7 @@ fun AppNavigation(
                         BookDetailScreen(
                             navController = navController,
                             bookId = bookId,
+                            libraryViewModel = libraryViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this
                         )
@@ -288,6 +305,7 @@ fun AppNavigation(
                         BookDetailScreen(
                             navController = navController,
                             bookId = id,
+                            libraryViewModel = libraryViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this,
                             initialTitle = title,
@@ -297,10 +315,18 @@ fun AppNavigation(
                         )
                     }
 
-                    composable("library") { PlaceholderScreen("Thư viện", navController) }
+                    composable("library") {
+                        LibraryScreen(
+                            navController = navController,
+                            libraryViewModel = libraryViewModel
+                        )
+                    }
+
                     composable(Screen.Ebook.route) { EbookScreen(navController) }
                     composable(Screen.Kids.route) { KidsScreen(navController) }
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
+                    composable(Screen.Detective.route) { DetectiveScreen(navController) }
+                    composable(Screen.Astronomy.route) { AstronomyScreen(navController) }
                     composable("personal") { PersonalScreen(navController) }
                     composable("personal") {
                         PersonalScreen(
@@ -326,7 +352,7 @@ fun AppNavigation(
                         AudioPlayerScreen(
                             navController = navController,
                             bookId = bookId,
-                            playerViewModel = playerViewModel // Truyền PlayerViewModel vào
+                            playerViewModel = playerViewModel
                         )
                     }
 
@@ -339,7 +365,8 @@ fun AppNavigation(
                             navController = navController,
                             bookId = bookId,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = this
+                            animatedVisibilityScope = this,
+                            libraryViewModel = libraryViewModel
                         )
                     }
 
@@ -361,6 +388,49 @@ fun AppNavigation(
                             onNavigateBack = { navController.popBackStack() }
                         )
                     }
+
+                    // --- MÀN HÌNH ASTRONOMY ---
+                    composable("astronomy") {
+                        AstronomyScreen(navController)
+                    }
+
+                    // Chi tiết sách thiên văn
+                    composable(
+                        route = "astronomy_detail/{bookId}",
+                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString("bookId")
+                        AstronomyDetailScreen(
+                            navController = navController,
+                            bookId = bookId,
+                            sharedTransitionScope = this@SharedTransitionLayout,
+                            animatedVisibilityScope = this,
+                            playerViewModel = playerViewModel,
+                            libraryViewModel = libraryViewModel
+                        )
+                    }
+
+                    // Player cho sách thiên văn
+                    composable(
+                        route = "astronomy_audio_player/{bookId}",
+                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString("bookId")
+                        AstronomyAudioPlayerScreen(
+                            navController = navController,
+                            bookId = bookId,
+                            playerViewModel = playerViewModel
+                        )
+                    }
+
+                    // --- MÀN HÌNH CÀI ĐẶT ---
+                    composable("settings/language") { LanguageScreen(navController) }
+                    composable("settings/theme") { ThemeSettingsScreen(navController) }
+                    composable("settings/notification") { NotificationSettingsScreen(navController) }
+                    composable("settings/about") { AboutScreen(navController) }
+                    composable("settings/contact") { ContactScreen(navController) }
+                    composable("settings/help_center") { HelpCenterScreen(navController) }
+                    composable("settings/profile_info") { ProfileInfoScreen(navController) }
                 }
             }
         }
