@@ -67,6 +67,7 @@ import com.kienvo.rosach.ui.theme.PaleYellow
 import com.kienvo.rosach.ui.theme.PaleYellowDark
 import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.viewmodel.UserViewModel
+import com.kienvo.rosach.viewmodel.PlayerViewModel
 import com.kienvo.rosach.widgets.BookSection
 import com.kienvo.rosach.widgets.FonosCarousel
 import com.kienvo.rosach.widgets.VerticalBookSection
@@ -80,7 +81,8 @@ fun HomeScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     bookViewModel: BookViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    playerViewModel: PlayerViewModel = viewModel()
 ) {
     // Load data
     val allBooks by bookViewModel.allBooks.collectAsState()

@@ -62,7 +62,9 @@ fun AudioPlayerScreen(
     var currentPartIndex by remember { mutableIntStateOf(0) }
     var isLoadingData by remember { mutableStateOf(false) }
     var showPartsSheet by remember { mutableStateOf(false) }
+    var showAmbienceSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+    val ambienceSheetState = rememberModalBottomSheetState()
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
@@ -162,6 +164,9 @@ fun AudioPlayerScreen(
                         IconButton(onClick = { showPartsSheet = true }) {
                             Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = "Chapters", tint = Color.White)
                         }
+                        IconButton(onClick = { showAmbienceSheet = true }) {
+                            Icon(Icons.Default.Tune, contentDescription = "Mixer", tint = Color.White)
+                        }
                         IconButton(onClick = { }) {
                             Icon(Icons.Default.NightsStay, contentDescription = "Sleep Timer", tint = Color.White)
                         }
@@ -233,6 +238,16 @@ fun AudioPlayerScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
+        }
+
+        // Ambience Bottom Sheet
+        if (showAmbienceSheet) {
+            com.kienvo.rosach.widgets.AmbienceBottomSheet(
+                sheetState = ambienceSheetState,
+                onDismiss = { showAmbienceSheet = false },
+                playerViewModel = playerViewModel,
+                bookDescription = book?.description ?: ""
+            )
         }
 
         if (showPartsSheet) {

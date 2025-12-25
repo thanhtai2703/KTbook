@@ -249,7 +249,8 @@ fun AppNavigation(
                         HomeScreen(
                             navController = navController,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = this
+                            animatedVisibilityScope = this,
+                            playerViewModel = playerViewModel
                         )
                     }
 
@@ -277,6 +278,7 @@ fun AppNavigation(
                             navController = navController,
                             bookId = bookId,
                             libraryViewModel = libraryViewModel,
+                            playerViewModel = playerViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this
                         )
@@ -304,6 +306,7 @@ fun AppNavigation(
                             navController = navController,
                             bookId = id,
                             libraryViewModel = libraryViewModel,
+                            playerViewModel = playerViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this,
                             initialTitle = title,

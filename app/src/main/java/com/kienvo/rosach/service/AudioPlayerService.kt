@@ -7,138 +7,142 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @OptIn(UnstableApi::class)
 class AudioPlayerService(private val context: Context) {
 
-    private var exoPlayer: ExoPlayer? = null
+    private var mainPlayer: ExoPlayer? = null
+    
+    // Map to hold players for each ambient sound type
+    private val ambientPlayers = mutableMapOf<String, ExoPlayer>()
 
     private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+    val isPlaying = _isPlaying.asStateFlow()
 
     private val _currentPosition = MutableStateFlow(0L)
-    val currentPosition: StateFlow<Long> = _currentPosition.asStateFlow()
+    val currentPosition = _currentPosition.asStateFlow()
 
     private val _duration = MutableStateFlow(0L)
-    val duration: StateFlow<Long> = _duration.asStateFlow()
+    val duration = _duration.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    val error = _error.asStateFlow()
 
     private val _currentUrl = MutableStateFlow<String?>(null)
-    val currentUrl: StateFlow<String?> = _currentUrl.asStateFlow()
+    val currentUrl = _currentUrl.asStateFlow()
 
     init {
-        initializePlayer()
+        initializeMainPlayer()
     }
 
-    private fun initializePlayer() {
-        if (exoPlayer != null) return
-        
-        exoPlayer = ExoPlayer.Builder(context).build().apply {
+    private fun initializeMainPlayer() {
+        if (mainPlayer != null) return
+        mainPlayer = ExoPlayer.Builder(context).build().apply {
             addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    _isLoading.value = playbackState == Player.STATE_BUFFERING
-
-                    when (playbackState) {
-                        Player.STATE_READY -> {
-                            _duration.value = duration
-                            _error.value = null
-                        }
-                        Player.STATE_ENDED -> {
-                            _isPlaying.value = false
-                        }
-                    }
-                    updatePlaybackState()
+                override fun onPlaybackStateChanged(state: Int) {
+                    _isLoading.value = state == Player.STATE_BUFFERING
+                    if (state == Player.STATE_READY) _duration.value = duration
+                    if (state == Player.STATE_ENDED) _isPlaying.value = false
                 }
-
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    _isPlaying.value = isPlaying
-                }
-
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    _error.value = "Lỗi phát audio: ${error.message}"
-                    _isLoading.value = false
-                }
+                override fun onIsPlayingChanged(playing: Boolean) { _isPlaying.value = playing }
             })
         }
     }
 
-    fun loadAudioFromUrl(audioUrl: String) {
-        if (audioUrl == _currentUrl.value) return // Don't reload same URL
-        
-        if (audioUrl.isEmpty()) {
-            _error.value = "URL audio không hợp lệ"
-            return
+    private fun getOrCreateAmbientPlayer(type: String): ExoPlayer {
+        return ambientPlayers.getOrPut(type) {
+            ExoPlayer.Builder(context).build().apply {
+                repeatMode = Player.REPEAT_MODE_ALL
+                volume = 0f
+            }
         }
+    }
 
+    fun loadAudioFromUrl(audioUrl: String) {
+        if (audioUrl == _currentUrl.value) return
         try {
-            _isLoading.value = true
-            _error.value = null
             _currentUrl.value = audioUrl
-
-            exoPlayer?.let { player ->
+            mainPlayer?.let { player ->
                 val mediaItem = MediaItem.fromUri(audioUrl)
                 player.setMediaItem(mediaItem)
                 player.prepare()
             }
         } catch (e: Exception) {
-            _error.value = "Không thể load audio: ${e.message}"
-            _isLoading.value = false
+            _error.value = e.message
         }
     }
 
-    fun play() {
-        exoPlayer?.play()
-    }
-
-    fun pause() {
-        exoPlayer?.pause()
-    }
-
-    fun seekTo(position: Long) {
-        exoPlayer?.seekTo(position)
-        _currentPosition.value = position
-    }
-
-    fun togglePlayPause() {
-        exoPlayer?.let { player ->
-            if (player.isPlaying) {
-                pause()
+    /**
+     * Controls a specific ambient sound stream
+     */
+    fun setAmbientSound(type: String, url: String, volume: Float) {
+        try {
+            val player = getOrCreateAmbientPlayer(type)
+            val currentUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
+            
+            // If volume is > 0, ensure it's playing the right content
+            if (volume > 0f) {
+                if (currentUri != url) {
+                    val mediaItem = MediaItem.fromUri(url)
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
+                }
+                if (!player.isPlaying) {
+                    player.play()
+                }
             } else {
-                play()
+                // If volume is 0, just pause to save battery
+                if (player.isPlaying) {
+                    player.pause()
+                }
+            }
+            player.volume = volume.coerceIn(0f, 1f)
+        } catch (e: Exception) {
+            android.util.Log.e("AudioService", "Error setting ambient $type: ${e.message}")
+        }
+    }
+
+    fun setAmbientVolume(type: String, volume: Float) {
+        val player = ambientPlayers[type]
+        if (player != null) {
+            player.volume = volume.coerceIn(0f, 1f)
+            if (volume > 0f && !player.isPlaying) {
+                player.play()
+            } else if (volume <= 0f && player.isPlaying) {
+                player.pause()
             }
         }
     }
 
-    fun seekForward(milliseconds: Long = 15000L) {
-        exoPlayer?.let { player ->
-            val newPosition = (player.currentPosition + milliseconds).coerceAtMost(player.duration)
-            seekTo(newPosition)
+    fun stopAmbient() {
+        ambientPlayers.values.forEach { 
+            it.pause()
+            it.volume = 0f
         }
     }
 
-    fun seekBackward(milliseconds: Long = 15000L) {
-        exoPlayer?.let { player ->
-            val newPosition = (player.currentPosition - milliseconds).coerceAtLeast(0L)
-            seekTo(newPosition)
-        }
-    }
+    fun play() = mainPlayer?.play()
+    fun pause() = mainPlayer?.pause()
+    fun togglePlayPause() { if (mainPlayer?.isPlaying == true) pause() else play() }
+    fun seekTo(pos: Long) = mainPlayer?.seekTo(pos)
+    fun seekForward() = mainPlayer?.let { it.seekTo((it.currentPosition + 15000).coerceAtMost(it.duration)) }
+    fun seekBackward() = mainPlayer?.let { it.seekTo((it.currentPosition - 15000).coerceAtLeast(0)) }
 
     fun updatePlaybackState() {
-        exoPlayer?.let { player ->
-            _currentPosition.value = player.currentPosition
-            _duration.value = player.duration
+        mainPlayer?.let {
+            _currentPosition.value = it.currentPosition
+            _duration.value = it.duration
         }
     }
 
     fun release() {
-        exoPlayer?.release()
-        exoPlayer = null
+        mainPlayer?.release()
+        ambientPlayers.values.forEach { it.release() }
+        ambientPlayers.clear()
+        mainPlayer = null
     }
 }
