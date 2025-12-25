@@ -111,13 +111,13 @@ fun SelfHelpScreen(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         items(books) { book ->
-                            BookGridItem(book, onClick = { navController.navigate("audio_player/${book.id}") })
+                            BookGridItem(book, onClick = { navController.navigate("detail/${book.id}") })
                         }
                     }
                 } else {
                     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
                         items(books) { book ->
-                            BookListItem(book, onClick = { navController.navigate("audio_player/${book.id}") })
+                            BookListItem(book, onClick = { navController.navigate("detail/${book.id}") })
                             Spacer(Modifier.height(24.dp))
                         }
                     }
@@ -147,12 +147,6 @@ private fun BookListItem(book: Book, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(book.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(book.author, color = Color.Gray, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Star, null, tint = Color.Yellow, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(book.rating.toString(), color = Color.Gray, fontSize = 13.sp)
-            }
         }
     }
 }

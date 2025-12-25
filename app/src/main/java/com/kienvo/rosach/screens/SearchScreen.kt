@@ -97,14 +97,9 @@ fun SearchScreen(
                         contentPadding = PaddingValues(16.dp, 24.dp, 16.dp, 24.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        item(span = { GridItemSpan(2) }) {
-                            BigBannerCard(Icons.Default.AutoStories, bannerImageSource, navController)
-                        }
-
-                        items(categories) { category ->
+                        items(categories.filter { it.slug != "top-thinh-hanh" }) { category ->
                             CategorySmallCard(category) {
                                 when (category.slug) {
-                                    "top-thinh-hanh" -> navController.navigate("home")
                                     "sach-chua-lanh" -> navController.navigate(Screen.SelfHelp.route)
                                     //"top-ebook" -> navController.navigate(Screen.Ebook.route)
                                     "tieu-thuyet-trinh-tham" -> navController.navigate(Screen.Detective.route)
@@ -142,27 +137,5 @@ fun CategorySmallCard(category: BookCategory, onClick: () -> Unit) {
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
             Text(text = category.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 20.sp)
         }
-    }
-}
-
-@Composable
-fun BigBannerCard(icon: androidx.compose.ui.graphics.vector.ImageVector, imageSource: String, navController: NavController) {
-    Box(
-        modifier = Modifier.fillMaxWidth().height(165.dp).clip(RoundedCornerShape(18.dp))
-            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
-            .background(Color(0xFF24135F))
-            .clickable { navController.navigate("big_banner_detail") }
-    ) {
-        Column(modifier = Modifier.align(Alignment.TopStart).padding(start = 18.dp, top = 18.dp).fillMaxWidth(0.65f)) {
-            Text("Mới: Sách Tiếng Anh", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Học tiếng Anh qua sách hay cùng phụ đề song ngữ", color = Color(0xFFD1C4E9), fontSize = 14.sp, lineHeight = 18.sp)
-        }
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(imageSource).crossfade(true).build(),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.align(Alignment.BottomEnd).width(200.dp).height(170.dp).offset(x = 20.dp, y = 70.dp).rotate(-15f).alpha(0.95f).clip(RoundedCornerShape(12.dp))
-        )
     }
 }

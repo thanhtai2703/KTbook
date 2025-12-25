@@ -53,7 +53,7 @@ fun LibraryScreen(
     libraryViewModel: LibraryViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Đang nghe", "Yêu thích", "Lịch sử", "Tải xuống")
+    val tabs = listOf("Đang nghe", "Yêu thích", "Lịch sử")
 
     // Collect states from ViewModel
     val currentlyListening by libraryViewModel.currentlyListening.collectAsState()
@@ -119,15 +119,6 @@ fun LibraryScreen(
                     onClearAll = { libraryViewModel.clearAllHistory() },
                     onDelete = { book ->
                         libraryViewModel.removeFromHistory(book)
-                    }
-                )
-                3 -> DownloadsTab(
-                    downloads,
-                    navController,
-                    totalSize = libraryViewModel.getTotalDownloadSize(),
-                    onManageClick = { libraryViewModel.showDownloadManageDialog() },
-                    onDelete = { book ->
-                        libraryViewModel.removeFromDownloads(book)
                     }
                 )
             }

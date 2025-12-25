@@ -116,7 +116,6 @@ fun PersonalScreen(
                 SettingsSection(
                     title = "Ứng dụng",
                     items = listOf(
-                        SettingItem("Tải xuống", Icons.Default.Download),
                         SettingItem("Giao diện", Icons.Default.Palette),
                         SettingItem("Ngôn ngữ", Icons.Default.Language)
                     ),
@@ -328,16 +327,6 @@ fun SettingsSection(
                             when (item.title) {
                                 "Thông tin cá nhân" -> navController?.navigate("settings/profile_info")
                                 "Thông báo" -> navController?.navigate("settings/notification")
-                                "Tải xuống" -> {
-                                    // Navigate to Library tab properly to preserve bottom bar state
-                                    navController?.navigate("library") {
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
                                 "Giao diện" -> navController?.navigate("settings/theme")
                                 "Ngôn ngữ" -> navController?.navigate("settings/language")
                                 "Trung tâm trợ giúp" -> navController?.navigate("settings/help_center")

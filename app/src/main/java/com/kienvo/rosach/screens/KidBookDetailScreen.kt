@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -156,8 +155,6 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Nút Yêu thích với logic toggle
             KidFavoriteActionRow(

@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -156,28 +155,9 @@ fun AstronomyDetailScreen(
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Rating
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "⭐ ${displayBook.rating}",
-                    color = Color(0xFFFFD700),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "(${(100..500).random()} đánh giá)",
-                    color = Color.Gray,
-                    fontSize = 13.sp
-                )
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            AstronomyActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Nút Yêu thích với logic toggle
             AstronomyFavoriteActionRow(

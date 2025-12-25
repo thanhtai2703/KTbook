@@ -367,8 +367,6 @@ fun BookDetailScreen(
                         InfoRow(label = "Giọng đọc", value = "Đang cập nhật")
                         Spacer(modifier = Modifier.height(12.dp))
                         InfoRow(label = "Nhà xuất bản", value = "Đang cập nhật")
-                        Spacer(modifier = Modifier.height(12.dp))
-                        InfoRow(label = "Đánh giá", value = "${book?.rating ?: 0.0} ⭐")
 
                         Spacer(modifier = Modifier.height(24.dp))
                         MyDivider()
@@ -383,16 +381,6 @@ fun BookDetailScreen(
                             fontSize = 15.sp,
                             textAlign = TextAlign.Justify
                         )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                        MyDivider()
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Chapters
-                        SectionTitle(title = "Danh sách chương")
-                        chapters.forEachIndexed { index, chapterName ->
-                            ChapterItem(index = index + 1, name = chapterName)
-                        }
 
                         Spacer(modifier = Modifier.height(100.dp))
                     }
