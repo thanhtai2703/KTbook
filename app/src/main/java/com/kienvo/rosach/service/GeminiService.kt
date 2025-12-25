@@ -6,18 +6,17 @@ import com.google.ai.client.generativeai.type.generationConfig
 class GeminiService {
     private val apiKey = "AIzaSyB53v-WQzlw8GkOfp65IQKJGptjjOI9Cck"
 
+    // Sử dụng gemini-1.5-flash là model mới và ổn định nhất
     private val model = GenerativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-1.5-flash",
         apiKey = apiKey,
         generationConfig = generationConfig {
-            temperature = 0.7f
+            temperature = 0.8f // Tăng tính sáng tạo cho việc phối âm
         }
     )
 
     /**
      * Gửi yêu cầu tư vấn sách tới AI
-     * @param userQuery Câu hỏi của user
-     * @param bookCatalog Danh sách thông tin sách để AI tham khảo
      */
     suspend fun getRecommendation(userQuery: String, bookCatalog: String): String? {
         val systemPrompt = """
@@ -37,7 +36,6 @@ class GeminiService {
 
         return try {
             val response = model.generateContent(systemPrompt + "\n\nYêu cầu của người dùng: " + userQuery)
-            
             val text = response.text
             if (text.isNullOrBlank()) {
                 "Xin lỗi, tôi không tìm thấy nội dung phù hợp. Bạn hãy thử mô tả khác nhé!"
@@ -51,21 +49,26 @@ class GeminiService {
     }
 
     /**
-     * Dựa trên mô tả sách, gợi ý một bản phối âm thanh môi trường (tối đa 3 loại)
-     * Trả về JSON string ví dụ: {"rain": 0.5, "wind": 0.2}
+     * Dựa trên mô tả sách, gợi ý một bản phối âm thanh môi trường đa lớp (Layered Ambience)
      */
     suspend fun getAmbientSuggestion(bookDescription: String): String {
         val prompt = """
-            Bạn là một chuyên gia phối âm thanh. Dựa trên mô tả cuốn sách sau, hãy tạo một bản phối âm thanh môi trường phù hợp nhất để nghe kèm.
-            Bạn có thể chọn tối đa 3 loại âm thanh từ danh sách: 
-            rain (tiếng mưa), wind (tiếng gió), fire (tiếng lửa tí tách), birds (tiếng chim hót).
+            Bạn là một chuyên gia thiết kế âm thanh cho phim (Sound Designer). 
+            Dựa trên mô tả cuốn sách sau, hãy tạo một "Không gian âm thanh" (Ambient Mix) đa lớp (tối đa 3 loại) để làm nổi bật tâm trạng của câu chuyện.
             
-            YÊU CẦU:
-            1. Phân bổ âm lượng (0.0 đến 1.0) cho mỗi loại bạn chọn.
-            2. Tổng âm lượng các loại không nên quá 0.8 để tránh át tiếng sách.
-            3. Trả về DUY NHẤT một chuỗi JSON thuần túy (Plain JSON), KHÔNG ĐƯỢC để trong block code ```json. 
-            4. Chỉ bao gồm các key: "rain", "wind", "fire", "birds".
-            Ví dụ: {"rain": 0.4, "wind": 0.1}
+            DANH SÁCH ÂM THANH CÓ SẴN:
+            - rain (tiếng mưa)
+            - wind (tiếng gió)
+            - fire (tiếng lửa tí tách)
+            - birds (tiếng chim hót)
+            
+            YÊU CẦU QUAN TRỌNG:
+            1. Hãy cố gắng chọn ít nhất 2 loại âm thanh để tạo sự sống động (ví dụ: mưa + gió, hoặc chim hót + gió).
+            2. Phân bổ âm lượng (0.1 đến 0.6) cho mỗi loại.
+            3. Tổng âm lượng các loại không nên quá 0.8.
+            4. Trả về DUY NHẤT một chuỗi JSON thuần túy (Plain JSON), không có markdown. 
+            
+            Ví dụ mẫu: {"rain": 0.4, "wind": 0.2, "birds": 0.1}
             
             MÔ TẢ SÁCH: $bookDescription
         """.trimIndent()

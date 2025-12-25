@@ -90,18 +90,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      */
     fun setAmbientMix(jsonConfig: String) {
         try {
+            val json = org.json.JSONObject(jsonConfig)
             val types = listOf("rain", "wind", "fire", "birds")
-            stopAmbient() 
+            
+            stopAmbient() // Clear current mix
             
             types.forEach { type ->
-                if (jsonConfig.contains("\"$type\"")) {
-                    val startIndex = jsonConfig.indexOf("\"$type\"") + type.length + 3
-                    var endIndex = jsonConfig.indexOf(",", startIndex)
-                    if (endIndex == -1) endIndex = jsonConfig.indexOf("}", startIndex)
-                    
-                    val valStr = jsonConfig.substring(startIndex, endIndex).replace(":", "").trim()
-                    val volume = valStr.toFloatOrNull() ?: 0f
-                    
+                if (json.has(type)) {
+                    val volume = json.optDouble(type, 0.0).toFloat()
                     if (volume > 0) {
                         updateAmbientVol(type, volume)
                         setAmbientType(type)
@@ -109,7 +105,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("PlayerVM", "Error parsing AI mix: ${e.message}")
+            android.util.Log.e("PlayerVM", "Error parsing AI mix JSON: $jsonConfig", e)
         }
     }
 
