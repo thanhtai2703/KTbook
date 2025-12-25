@@ -75,7 +75,7 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
             "totalRatings" to (100..1000).random(),
             "totalListens" to (500..5000).random(),
             "duration" to if (book.type == "audiobook") "${(2..8).random()}h ${(0..59).random()}m" else null,
-            "totalParts" to if (book.type == "audiobook") (2..5).random() else null,
+            "totalParts" to if (book.type == "ebook") 1 else (2..5).random(), // At least 1 part for everything
             "pageCount" to if (book.type == "ebook") (100..500).random() else null,
             "fileSize" to "${(5..50).random()} MB",
             "language" to "vi",
@@ -90,11 +90,9 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
 
         db.collection("books").document(book.id).set(bookData).await()
 
-        // Upload sample parts for audiobooks
-        if (book.type == "audiobook") {
-            val totalParts = bookData["totalParts"] as Int
-            uploadSampleParts(book.id, totalParts)
-        }
+        // Upload sample parts for ALL books (minimum 1)
+        val totalParts = (bookData["totalParts"] as? Int) ?: 1
+        uploadSampleParts(book.id, totalParts)
     }
 
     private suspend fun uploadSampleParts(bookId: String, totalParts: Int) {
