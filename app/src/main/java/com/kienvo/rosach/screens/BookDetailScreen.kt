@@ -354,9 +354,15 @@ fun BookDetailScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // Stats
+                        val displayType = when(bookType) {
+                            "kid" -> "Thiếu nhi"
+                            "astronomy" -> "Thiên văn"
+                            "ebook" -> "Ebook"
+                            else -> "Sách nói"
+                        }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             BookStatItem(Icons.Default.AccessTime, "Đang cập nhật", "Thời lượng")
-                            BookStatItem(Icons.Default.Category, "Audiobook", "Thể loại")
+                            BookStatItem(Icons.Default.Category, displayType, "Thể loại")
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))

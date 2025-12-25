@@ -397,7 +397,12 @@ fun AppNavigation(
 
                     // --- MÀN HÌNH CÀI ĐẶT ---
                     composable("settings/language") { LanguageScreen(navController) }
-                    composable("settings/theme") { ThemeSettingsScreen(navController) }
+                    composable("settings/theme") { 
+                        ThemeSettingsScreen(
+                            navController = navController,
+                            userViewModel = userViewModel
+                        ) 
+                    }
                     composable("settings/notification") { NotificationSettingsScreen(navController) }
                     composable("settings/about") { AboutScreen(navController) }
                     composable("settings/contact") { ContactScreen(navController) }

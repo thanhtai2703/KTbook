@@ -1,12 +1,15 @@
 package com.kienvo.rosach.screens.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -16,10 +19,17 @@ import androidx.navigation.NavController
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.Yellow
 
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kienvo.rosach.viewmodel.UserViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThemeSettingsScreen(navController: NavController) {
-    var selectedTheme by remember { mutableStateOf("Tối") }
+fun ThemeSettingsScreen(
+    navController: NavController,
+    userViewModel: UserViewModel = viewModel()
+) {
+    val userProfile by userViewModel.userProfile.collectAsState()
+    val isDarkMode = userProfile?.settings?.isDarkMode ?: true
 
     Scaffold(
         containerColor = DarkBg,
@@ -72,8 +82,10 @@ fun ThemeSettingsScreen(navController: NavController) {
                     ThemeOption(
                         title = "Tối",
                         description = "Giao diện tối (Khuyến nghị)",
-                        selected = selectedTheme == "Tối",
-                        onSelect = { selectedTheme = "Tối" }
+                        selected = isDarkMode,
+                        onSelect = { 
+                            if (!isDarkMode) userViewModel.toggleDarkMode() 
+                        }
                     )
                     HorizontalDivider(
                         color = Color.Gray.copy(alpha = 0.2f),
@@ -82,18 +94,10 @@ fun ThemeSettingsScreen(navController: NavController) {
                     ThemeOption(
                         title = "Sáng",
                         description = "Giao diện sáng",
-                        selected = selectedTheme == "Sáng",
-                        onSelect = { selectedTheme = "Sáng" }
-                    )
-                    HorizontalDivider(
-                        color = Color.Gray.copy(alpha = 0.2f),
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                    ThemeOption(
-                        title = "Tự động",
-                        description = "Theo cài đặt hệ thống",
-                        selected = selectedTheme == "Tự động",
-                        onSelect = { selectedTheme = "Tự động" }
+                        selected = !isDarkMode,
+                        onSelect = { 
+                            if (isDarkMode) userViewModel.toggleDarkMode() 
+                        }
                     )
                 }
             }
@@ -113,8 +117,10 @@ fun ThemeOption(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .clickable { onSelect() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -131,7 +137,7 @@ fun ThemeOption(
         }
         RadioButton(
             selected = selected,
-            onClick = onSelect,
+            onClick = null, // Set to null so the row handles the click
             colors = RadioButtonDefaults.colors(
                 selectedColor = Yellow,
                 unselectedColor = Color.Gray

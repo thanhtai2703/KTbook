@@ -14,12 +14,12 @@ import com.kienvo.rosach.viewmodel.UserViewModel
 import com.kienvo.rosach.viewmodel.PlayerViewModel
 
 @Composable
-fun FonosApp() {
+fun FonosApp(userViewModel: UserViewModel = viewModel()) {
     val navController = rememberNavController()
 
     // Shared ViewModels for the entire app
     val authViewModel: AuthViewModel = viewModel()
-    val userViewModel: UserViewModel = viewModel()
+    // val userViewModel: UserViewModel = viewModel() // REMOVED: Passed from root
     val playerViewModel: PlayerViewModel = viewModel() // Thêm PlayerViewModel
 
     val currentUser by authViewModel.currentUser.collectAsState()

@@ -56,19 +56,19 @@ fun PersonalScreen(
     }
 
     Scaffold(
-        containerColor = DarkBg,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Cá nhân",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBg
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }

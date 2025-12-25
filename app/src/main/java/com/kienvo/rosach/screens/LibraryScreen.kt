@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +60,7 @@ fun LibraryScreen(
     val currentlyListening by libraryViewModel.currentlyListening.collectAsState()
     val favorites by libraryViewModel.favorites.collectAsState()
     val history by libraryViewModel.history.collectAsState()
+    val historyRecords by libraryViewModel.historyRecords.collectAsState()
     val downloads by libraryViewModel.downloads.collectAsState()
     val listeningProgress by libraryViewModel.listeningProgress.collectAsState()
     val favoriteSortOption by libraryViewModel.favoriteSortOption.collectAsState()
@@ -115,6 +117,7 @@ fun LibraryScreen(
                 )
                 2 -> HistoryTab(
                     history,
+                    historyRecords,
                     navController,
                     onClearAll = { libraryViewModel.clearAllHistory() },
                     onDelete = { book ->
@@ -535,7 +538,13 @@ private fun FavoriteBookCard(book: Book, navController: NavController, onRemoveF
 
 // Tab 3: Lịch sử (History)
 @Composable
-private fun HistoryTab(books: List<Book>, navController: NavController, onClearAll: () -> Unit, onDelete: (Book) -> Unit) {
+private fun HistoryTab(
+    books: List<Book>, 
+    records: List<com.kienvo.rosach.data.ListeningRecord>,
+    navController: NavController, 
+    onClearAll: () -> Unit, 
+    onDelete: (Book) -> Unit
+) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
     ) {
@@ -568,40 +577,21 @@ private fun HistoryTab(books: List<Book>, navController: NavController, onClearA
                 }
             }
 
-            // Group by date
-            item {
-                Text(
-                    text = "Hôm nay",
-                    color = LibraryTextGrey,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            items(books.take(3)) { book ->
-                HistoryBookCard(book, navController, onDelete)
-            }
-
-            item {
-                Text(
-                    text = "Hôm qua",
-                    color = LibraryTextGrey,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            items(books.drop(3)) { book ->
-                HistoryBookCard(book, navController, onDelete)
+            items(books) { book ->
+                val record = records.find { it.bookId == book.id }
+                val timeStr = record?.let { 
+                    val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                    sdf.format(java.util.Date(it.lastListenedAt))
+                } ?: "00:00"
+                
+                HistoryBookCard(book, timeStr, navController, onDelete)
             }
         }
     }
 }
 
 @Composable
-private fun HistoryBookCard(book: Book, navController: NavController, onDelete: (Book) -> Unit) {
+private fun HistoryBookCard(book: Book, time: String, navController: NavController, onDelete: (Book) -> Unit) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -645,7 +635,7 @@ private fun HistoryBookCard(book: Book, navController: NavController, onDelete: 
             }
 
             Text(
-                text = "15:30",
+                text = time,
                 color = LibraryTextGrey,
                 fontSize = 12.sp
             )

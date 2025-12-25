@@ -168,13 +168,17 @@ class UserViewModel : ViewModel() {
     // Cập nhật settings
     fun updateSettings(settings: UserSettings) {
         val userId = auth.currentUser?.uid ?: return
+        
+        // Optimistic UI update: Cập nhật local ngay lập tức
+        _userProfile.value = _userProfile.value?.copy(settings = settings)
+        
         viewModelScope.launch {
             _isLoading.value = true
             val result = userRepository.updateSettings(userId, settings)
-            result.onSuccess {
+            if (result.isFailure) {
+                // Nếu lỗi, load lại từ server để revert local state
                 loadUserProfile(userId)
-            }.onFailure { exception ->
-                _error.value = exception.message
+                _error.value = result.exceptionOrNull()?.message
             }
             _isLoading.value = false
         }
@@ -182,7 +186,7 @@ class UserViewModel : ViewModel() {
 
     // Toggle dark mode
     fun toggleDarkMode() {
-        val currentSettings = _userProfile.value?.settings ?: return
+        val currentSettings = _userProfile.value?.settings ?: UserSettings()
         val newSettings = currentSettings.copy(isDarkMode = !currentSettings.isDarkMode)
         updateSettings(newSettings)
     }

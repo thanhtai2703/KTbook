@@ -4,9 +4,8 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.generationConfig
 
 class GeminiService {
-    private val apiKey = "AIzaSyAxYr-DQhEIg6RsecTx7u1v86Z5RTjuCnw"
-    
-    // Sử dụng gemini-1.5-flash là model mới và ổn định nhất hiện nay
+    private val apiKey = "AIzaSyB53v-WQzlw8GkOfp65IQKJGptjjOI9Cck"
+
     private val model = GenerativeModel(
         modelName = "gemini-2.5-flash",
         apiKey = apiKey,

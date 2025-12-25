@@ -70,6 +70,7 @@ class AudioPlayerService(private val context: Context) {
                 val mediaItem = MediaItem.fromUri(audioUrl)
                 player.setMediaItem(mediaItem)
                 player.prepare()
+                player.playWhenReady = true // Tự động phát khi đã load xong
             }
         } catch (e: Exception) {
             _error.value = e.message

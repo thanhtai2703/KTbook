@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +47,8 @@ fun SearchScreen(
     navController: NavController,
     searchViewModel: SearchViewModel = viewModel()
 ) {
-    val headerColor = Color(0xFF20272F)
-    val bodyColor = Color(0xFF1B1C20)
+    val headerColor = MaterialTheme.colorScheme.background
+    val bodyColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
 
     val categories by searchViewModel.categories.collectAsState()
     val isLoading by searchViewModel.isCategoriesLoading.collectAsState()
@@ -65,9 +66,9 @@ fun SearchScreen(
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Khám phá", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Khám phá", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     IconButton(onClick = { navController.navigate("profile") }) {
-                        Icon(Icons.Default.AccountCircle, null, tint = Color.LightGray, modifier = Modifier.size(36.dp))
+                        Icon(Icons.Default.AccountCircle, null, tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f), modifier = Modifier.size(36.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -101,7 +102,7 @@ fun SearchScreen(
                             CategorySmallCard(category) {
                                 when (category.slug) {
                                     "sach-chua-lanh" -> navController.navigate(Screen.SelfHelp.route)
-                                    //"top-ebook" -> navController.navigate(Screen.Ebook.route)
+                                    "top-ebook" -> navController.navigate(Screen.Ebook.route)
                                     "tieu-thuyet-trinh-tham" -> navController.navigate(Screen.Detective.route)
                                     "kids" -> navController.navigate(Screen.Kids.route)
                                     "astronomy" -> navController.navigate(Screen.Astronomy.route)
@@ -120,22 +121,45 @@ fun SearchScreen(
 fun CategorySmallCard(category: BookCategory, onClick: () -> Unit) {
     val bgMainColor = try { Color(android.graphics.Color.parseColor(category.color)) } catch (e: Exception) { Color(0xFF6D4C41) }
     
+    // Hardcode image for Detective if it's not loading
+    val displayImageUrl = if (category.slug == "tieu-thuyet-trinh-tham") {
+        "https://cdn1.fahasa.com/media/catalog/product/n/h/nhung_vu_ky_an_cua_sherlock_holmestb_1_2020_05_30_12_53_10.jpg"
+    } else {
+        category.imageUrl
+    }
+
     Box(
-        modifier = Modifier.aspectRatio(1.9f).clip(RoundedCornerShape(18.dp))
-            .border(width = 1.dp, color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(18.dp))
+        modifier = Modifier
+            .aspectRatio(1.6f) // Modern aspect ratio
+            .clip(RoundedCornerShape(12.dp))
+            .border(width = 1.dp, color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp))
             .background(Brush.verticalGradient(colors = listOf(bgMainColor, bgMainColor.copy(alpha = 0.8f))))
             .clickable { onClick() }
     ) {
-        if (category.imageUrl.isNotEmpty()) {
+        if (displayImageUrl.isNotEmpty()) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(category.imageUrl).crossfade(true).build(),
+                model = ImageRequest.Builder(LocalContext.current).data(displayImageUrl).crossfade(true).build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.align(Alignment.BottomEnd).width(90.dp).height(120.dp).offset(x = 15.dp, y = 20.dp).rotate(-8f).alpha(0.95f).clip(RoundedCornerShape(8.dp))
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .width(75.dp)
+                    .height(105.dp)
+                    .offset(x = 12.dp, y = 12.dp) // "Peek" effect: slightly offset outside
+                    .rotate(-15f)
+                    .alpha(0.9f)
+                    .clip(RoundedCornerShape(4.dp))
             )
         }
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-            Text(text = category.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 20.sp)
+            Text(
+                text = category.name,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                maxLines = 2
+            )
         }
     }
 }

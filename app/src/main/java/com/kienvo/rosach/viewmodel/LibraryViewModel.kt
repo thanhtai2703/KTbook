@@ -34,6 +34,10 @@ class LibraryViewModel : ViewModel() {
     private val _history = MutableStateFlow<List<Book>>(emptyList())
     val history: StateFlow<List<Book>> = _history.asStateFlow()
 
+    // Real records with timestamps
+    private val _historyRecords = MutableStateFlow<List<com.kienvo.rosach.data.ListeningRecord>>(emptyList())
+    val historyRecords: StateFlow<List<com.kienvo.rosach.data.ListeningRecord>> = _historyRecords.asStateFlow()
+
     private val _downloads = MutableStateFlow<List<Book>>(emptyList())
     val downloads: StateFlow<List<Book>> = _downloads.asStateFlow()
 
@@ -74,6 +78,7 @@ class LibraryViewModel : ViewModel() {
                         // 3. Load History
                         val historyBooks = bookRepository.getBooksByIds(profile.listeningHistory.map { it.bookId })
                         _history.value = historyBooks
+                        _historyRecords.value = profile.listeningHistory.sortedByDescending { it.lastListenedAt }
 
                         // 4. Load Currently Listening
                         val listeningRecords = profile.listeningHistory.filter { it.progress > 0 && it.progress < 1.0f }

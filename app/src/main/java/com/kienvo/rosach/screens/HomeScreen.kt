@@ -34,6 +34,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -167,7 +168,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBg)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // --- LAYER 1: NỘI DUNG CUỘN (Background ảnh + List sách) ---
         if (!isLoading || allBooks.isNotEmpty()) {
@@ -410,8 +411,8 @@ fun HomeScreen(
         ) {
             // Logo
             Column {
-                Text("RoSach", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 26.sp)
-                Text("Audio Book Application", color = Color.LightGray.copy(alpha = 0.8f), fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                Text("RoSach", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+                Text("Audio Book Application", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f), fontWeight = FontWeight.Medium, fontSize = 14.sp)
             }
 
             // Actions
