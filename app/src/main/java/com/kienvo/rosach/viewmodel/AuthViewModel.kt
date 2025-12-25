@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 class AuthViewModel : ViewModel() {
     private val authService = AuthService()
     private val userRepository = UserRepository()
+    private val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -21,15 +22,33 @@ class AuthViewModel : ViewModel() {
     private val _currentUser = MutableStateFlow<FirebaseUser?>(null)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
 
+    private var authStateListener: com.google.firebase.auth.FirebaseAuth.AuthStateListener? = null
+
     init {
-        checkCurrentUser()
+        setupAuthStateListener()
     }
 
-    private fun checkCurrentUser() {
-        _currentUser.value = authService.getCurrentUser()
+    private fun setupAuthStateListener() {
+        _currentUser.value = auth.currentUser
         if (_currentUser.value != null) {
             _authState.value = AuthState.Authenticated
         }
+
+        authStateListener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            _currentUser.value = user
+            if (user == null) {
+                _authState.value = AuthState.Idle
+            } else {
+                _authState.value = AuthState.Authenticated
+            }
+        }
+        auth.addAuthStateListener(authStateListener!!)
+    }
+
+    override fun onCleared() {
+        authStateListener?.let { auth.removeAuthStateListener(it) }
+        super.onCleared()
     }
 
     fun loginWithEmail(email: String, password: String) {

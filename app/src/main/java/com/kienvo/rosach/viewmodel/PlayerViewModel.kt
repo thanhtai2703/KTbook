@@ -1,64 +1,96 @@
 package com.kienvo.rosach.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.kienvo.rosach.model.Book
+import com.kienvo.rosach.service.AudioPlayerService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
- * ViewModel quản lý trạng thái phát nhạc toàn cục
- * Dùng chung cho tất cả các màn hình
+ * Global Player ViewModel that manages the AudioPlayerService
  */
-class PlayerViewModel : ViewModel() {
+class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Trạng thái hiện tại của player
+    val audioService = AudioPlayerService(application)
+
     private val _currentBook = MutableStateFlow<Book?>(null)
     val currentBook: StateFlow<Book?> = _currentBook.asStateFlow()
-
-    private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
-
-    private val _currentPosition = MutableStateFlow(0f) // 0.0 -> 1.0
-    val currentPosition: StateFlow<Float> = _currentPosition.asStateFlow()
 
     private val _showMiniPlayer = MutableStateFlow(false)
     val showMiniPlayer: StateFlow<Boolean> = _showMiniPlayer.asStateFlow()
 
-    // Phát sách mới
-    fun playBook(book: Book) {
+    // Expose flows from service
+    val isPlaying = audioService.isPlaying
+    val isLoading = audioService.isLoading
+    val currentPosition = audioService.currentPosition
+    val duration = audioService.duration
+    val error = audioService.error
+
+    init {
+        // Periodic position update while playing
+        viewModelScope.launch {
+            while (true) {
+                if (audioService.isPlaying.value) {
+                    audioService.updatePlaybackState()
+                }
+                delay(1000)
+            }
+        }
+    }
+
+    fun playBook(book: Book, audioUrl: String? = null) {
         _currentBook.value = book
-        _isPlaying.value = true
         _showMiniPlayer.value = true
-        _currentPosition.value = 0f
+        
+        audioUrl?.let {
+            audioService.loadAudioFromUrl(it)
+            audioService.play()
+        }
     }
 
-    // Toggle play/pause
+    fun loadUrl(url: String) {
+        audioService.loadAudioFromUrl(url)
+    }
+
     fun togglePlayPause() {
-        _isPlaying.value = !_isPlaying.value
+        audioService.togglePlayPause()
     }
 
-    // Đóng player hoàn toàn
+    fun seekTo(position: Long) {
+        audioService.seekTo(position)
+    }
+
+    fun updatePosition(percent: Float) {
+        val total = audioService.duration.value
+        if (total > 0) {
+            audioService.seekTo((percent * total).toLong())
+        }
+    }
+
+    fun seekForward() = audioService.seekForward()
+    fun seekBackward() = audioService.seekBackward()
+
     fun closePlayer() {
+        audioService.pause()
         _currentBook.value = null
-        _isPlaying.value = false
         _showMiniPlayer.value = false
-        _currentPosition.value = 0f
     }
 
-    // Thu nhỏ player (không dừng nhạc)
     fun minimizePlayer() {
         _showMiniPlayer.value = true
     }
 
-    // Mở player toàn màn hình
     fun maximizePlayer() {
         _showMiniPlayer.value = false
     }
 
-    // Cập nhật vị trí phát
-    fun updatePosition(position: Float) {
-        _currentPosition.value = position.coerceIn(0f, 1f)
+    override fun onCleared() {
+        audioService.release()
+        super.onCleared()
     }
 }
-

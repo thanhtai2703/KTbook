@@ -9,7 +9,8 @@ data class Book(
     val coverUrl: Any,
     val type: String = "audiobook", // "audiobook" hoặc "ebook"
     val rating: Double = 0.0,
-    val rank: Int = 0 // Rank cho top ebooks, 0 nếu không có
+    val rank: Int = 0, // Rank cho top ebooks, 0 nếu không có
+    val description: String = ""
 )
 
 // Các hàm này giờ chỉ gọi từ SampleData

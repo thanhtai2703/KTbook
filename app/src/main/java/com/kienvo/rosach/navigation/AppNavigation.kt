@@ -91,12 +91,13 @@ fun AppNavigation(
     val currentBook by playerViewModel.currentBook.collectAsState()
     val isPlaying by playerViewModel.isPlaying.collectAsState()
     val currentPosition by playerViewModel.currentPosition.collectAsState()
+    val duration by playerViewModel.duration.collectAsState()
     val showMiniPlayer by playerViewModel.showMiniPlayer.collectAsState()
 
+    val progress = if (duration > 0) currentPosition.toFloat() / duration.toFloat() else 0f
+
     // Ẩn MiniPlayer khi đang ở màn hình player full screen
-    val isInFullPlayer = currentRoute?.startsWith("audio_player") == true ||
-                         currentRoute?.startsWith("kid_audio_player") == true ||
-                         currentRoute?.startsWith("astronomy_audio_player") == true
+    val isInFullPlayer = currentRoute?.startsWith("audio_player") == true
 
     SharedTransitionLayout {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -111,18 +112,13 @@ fun AppNavigation(
                             MiniPlayer(
                                 book = currentBook,
                                 isPlaying = isPlaying,
-                                currentPosition = currentPosition,
+                                currentPosition = progress,
                                 onPlayPauseClick = { playerViewModel.togglePlayPause() },
                                 onCloseClick = { playerViewModel.closePlayer() },
                                 onMiniPlayerClick = {
-                                    // Mở lại màn hình player full screen
+                                    // Mở lại màn hình player full screen (Unified)
                                     currentBook?.let { book ->
-                                        val route = when (book.type) {
-                                            "kid" -> "kid_audio_player/${book.id}"
-                                            "astronomy" -> "astronomy_audio_player/${book.id}"
-                                            else -> "audio_player/${book.id}"
-                                        }
-                                        navController.navigate(route)
+                                        navController.navigate("audio_player/${book.id}")
                                     }
                                 }
                             )
@@ -330,7 +326,8 @@ fun AppNavigation(
                     composable("personal") {
                         PersonalScreen(
                             navController = navController,
-                            userViewModel = userViewModel
+                            userViewModel = userViewModel,
+                            authViewModel = authViewModel
                         )
                     }
 
@@ -338,25 +335,14 @@ fun AppNavigation(
                     composable("profile") {
                         PersonalScreen(
                             navController = navController,
-                            userViewModel = userViewModel
+                            userViewModel = userViewModel,
+                            authViewModel = authViewModel
                         )
                     }
 
                     // --- MÀN HÌNH PHÁT AUDIO ---
                     composable(
                         route = "audio_player/{bookId}",
-                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val bookId = backStackEntry.arguments?.getString("bookId")
-                        AudioPlayerScreen(
-                            navController = navController,
-                            bookId = bookId,
-                            playerViewModel = playerViewModel
-                        )
-                    }
-
-                    composable(
-                        route = "kid_audio_player/{bookId}",
                         arguments = listOf(navArgument("bookId") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val bookId = backStackEntry.arguments?.getString("bookId")
@@ -401,19 +387,6 @@ fun AppNavigation(
                             animatedVisibilityScope = this,
                             playerViewModel = playerViewModel,
                             libraryViewModel = libraryViewModel
-                        )
-                    }
-
-                    // Player cho sách thiên văn
-                    composable(
-                        route = "astronomy_audio_player/{bookId}",
-                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val bookId = backStackEntry.arguments?.getString("bookId")
-                        AudioPlayerScreen(
-                            navController = navController,
-                            bookId = bookId,
-                            playerViewModel = playerViewModel
                         )
                     }
 

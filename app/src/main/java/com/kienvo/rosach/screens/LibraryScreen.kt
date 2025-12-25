@@ -64,6 +64,11 @@ fun LibraryScreen(
     val favoriteSortOption by libraryViewModel.favoriteSortOption.collectAsState()
     val showDownloadManageDialog by libraryViewModel.showDownloadManageDialog.collectAsState()
 
+    // Refresh data when screen opens
+    LaunchedEffect(Unit) {
+        libraryViewModel.loadLibraryData()
+    }
+
     // State cho dialog sắp xếp
     var showSortDialog by remember { mutableStateOf(false) }
 

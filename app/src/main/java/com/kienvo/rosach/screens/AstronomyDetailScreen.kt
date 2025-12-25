@@ -190,17 +190,15 @@ fun AstronomyDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Mô tả
-            Text(
-                text = "Giới thiệu",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "${displayBook.title} của tác giả ${displayBook.author} là một hành trình khám phá vũ trụ đầy mê hoặc. " +
+            val bookDesc = if (displayBook.description.isNotEmpty()) {
+                displayBook.description
+            } else {
+                "${displayBook.title} của tác giả ${displayBook.author} là một hành trình khám phá vũ trụ đầy mê hoặc. " +
                         "Cuốn sách đưa bạn đi từ những hiện tượng thiên văn cơ bản đến những bí ẩn sâu thẳm của không gian. " +
-                        "Với giọng kể sinh động, đây là tác phẩm không thể bỏ qua cho những ai đam mê khoa học vũ trụ.",
+                        "Với giọng kể sinh động, đây là tác phẩm không thể bỏ qua cho những ai đam mê khoa học vũ trụ."
+            }
+            Text(
+                text = bookDesc,
                 color = Color.Gray,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -214,7 +212,7 @@ fun AstronomyDetailScreen(
                 onClick = {
                     // Khởi tạo player và chuyển sang màn hình player full
                     playerViewModel.playBook(displayBook)
-                    navController.navigate("astronomy_audio_player/${displayBook.id}")
+                    navController.navigate("audio_player/${displayBook.id}")
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),

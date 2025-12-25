@@ -41,7 +41,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -80,7 +81,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -109,7 +111,8 @@ class BookRepository(
                     coverUrl = doc.getString("coverUrl") ?: "",
                     type = doc.getString("type") ?: "audiobook",
                     rating = doc.getDouble("rating") ?: 0.0,
-                    rank = doc.getLong("rank")?.toInt() ?: 0
+                    rank = doc.getLong("rank")?.toInt() ?: 0,
+                    description = doc.getString("description") ?: ""
                 )
             } else {
                 null
@@ -158,7 +161,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -207,7 +211,8 @@ class BookRepository(
                                 coverUrl = doc.getString("coverUrl") ?: "",
                                 type = doc.getString("type") ?: "audiobook",
                                 rating = doc.getDouble("rating") ?: 0.0,
-                                rank = doc.getLong("rank")?.toInt() ?: 0
+                                rank = doc.getLong("rank")?.toInt() ?: 0,
+                                description = doc.getString("description") ?: ""
                             )
                         } catch (e: Exception) {
                             null

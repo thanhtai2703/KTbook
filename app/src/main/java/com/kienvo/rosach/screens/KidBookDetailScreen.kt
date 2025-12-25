@@ -169,9 +169,14 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Mô tả (Giả lập)
+            // Mô tả
+            val bookDesc = if (displayBook.description.isNotEmpty()) {
+                displayBook.description
+            } else {
+                "${displayBook.title} là một câu chuyện tuyệt vời của tác giả ${displayBook.author}. Câu chuyện mang đến những bài học ý nghĩa về cuộc sống, tình bạn và lòng dũng cảm, được kể lại qua giọng đọc truyền cảm dành riêng cho các bé."
+            }
             Text(
-                text = "${displayBook.title} là một câu chuyện tuyệt vời của tác giả ${displayBook.author}. Câu chuyện mang đến những bài học ý nghĩa về cuộc sống, tình bạn và lòng dũng cảm, được kể lại qua giọng đọc truyền cảm dành riêng cho các bé.",
+                text = bookDesc,
                 color = Color.Gray,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -183,8 +188,9 @@ fun KidBookDetailScreen(
             // Nút Nghe Ngay
             Button(
                 onClick = {
-                    navController.navigate("kid_audio_player/${displayBook.id}")
+                    navController.navigate("audio_player/${displayBook.id}")
                 },
+
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 contentPadding = PaddingValues(),

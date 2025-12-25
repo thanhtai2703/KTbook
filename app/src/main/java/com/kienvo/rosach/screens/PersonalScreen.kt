@@ -32,13 +32,15 @@ import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.Yellow
 import androidx.navigation.NavController
 import com.kienvo.rosach.viewmodel.UserViewModel
+import com.kienvo.rosach.viewmodel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalScreen(
     navController: NavController? = null,
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel()
 ) {
     val userProfile by userViewModel.userProfile.collectAsState()
     val isLoading by userViewModel.isLoading.collectAsState()
@@ -142,10 +144,13 @@ fun PersonalScreen(
                 // Logout Button
                 OutlinedButton(
                     onClick = {
+                        // Gọi logout trên cả 2 ViewModel
                         userViewModel.logout()
-                        navController?.navigate("auth") {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        authViewModel.logout()
+                        
+                        // Lưu ý: MyApp.kt đã có LaunchedEffect quan sát currentUser
+                        // Khi authViewModel.logout() được gọi, currentUser sẽ là null
+                        // và app sẽ tự động chuyển về màn hình auth.
                     },
                     modifier = Modifier
                         .fillMaxWidth()

@@ -94,22 +94,38 @@ class LibraryViewModel : ViewModel() {
     }
 
     fun removeFromCurrentlyListening(book: Book) {
+        // Local update
         _currentlyListening.value = _currentlyListening.value.filter { it.id != book.id }
+        // Remote update
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.removeHistoryItem(userId, book.id)
+        }
     }
 
     fun addToCurrentlyListening(book: Book, progress: Float = 0f) {
         if (_currentlyListening.value.none { it.id == book.id }) {
             _currentlyListening.value = listOf(book) + _currentlyListening.value
         }
+        // Update history in Firestore too
+        addToHistory(book)
     }
 
     fun removeFromFavorites(book: Book) {
         _favorites.value = _favorites.value.filter { it.id != book.id }
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.removeFavoriteBook(userId, book.id)
+        }
     }
 
     fun addToFavorites(book: Book) {
         if (_favorites.value.none { it.id == book.id }) {
             _favorites.value = listOf(book) + _favorites.value
+        }
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.addFavoriteBook(userId, book.id)
         }
     }
 
@@ -123,11 +139,29 @@ class LibraryViewModel : ViewModel() {
 
     fun removeFromHistory(book: Book) {
         _history.value = _history.value.filter { it.id != book.id }
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.removeHistoryItem(userId, book.id)
+        }
     }
 
     fun addToHistory(book: Book) {
         val filtered = _history.value.filter { it.id != book.id }
         _history.value = listOf(book) + filtered
+        
+        // Remote sync
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            val record = com.kienvo.rosach.data.ListeningRecord(
+                bookId = book.id,
+                bookTitle = book.title,
+                lastPosition = 0L,
+                duration = 0L,
+                progress = 0.1f, // Mặc định là đã bắt đầu nghe
+                lastListenedAt = System.currentTimeMillis()
+            )
+            userRepository.updateListeningHistory(userId, record)
+        }
     }
 
     fun clearAllHistory() {

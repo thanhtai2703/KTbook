@@ -144,10 +144,11 @@ fun BookDetailScreen(
     val bookCover = if (immediateCover.isNotEmpty()) immediateCover else (book?.coverUrl?.toString() ?: "")
 
     // Sử dụng dữ liệu thực từ book, fallback sang placeholder nếu chưa có
-    val bookDesc = book?.let {
-        // Nếu database có trường description, dùng nó. Nếu không, dùng placeholder
+    val bookDesc = if (book?.description?.isNotEmpty() == true) {
+        book?.description!!
+    } else {
         "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
-    } ?: "Đang tải thông tin..."
+    }
 
     val bookType = book?.type ?: "audiobook"
     val bookRating = book?.rating ?: 0.0

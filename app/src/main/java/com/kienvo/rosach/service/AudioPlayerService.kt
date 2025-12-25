@@ -30,14 +30,16 @@ class AudioPlayerService(private val context: Context) {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    // Fallback URL cho demo (Đắc Nhân Tâm)
-    private val dacNhanTamAudioUrl = "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
+    private val _currentUrl = MutableStateFlow<String?>(null)
+    val currentUrl: StateFlow<String?> = _currentUrl.asStateFlow()
 
     init {
         initializePlayer()
     }
 
     private fun initializePlayer() {
+        if (exoPlayer != null) return
+        
         exoPlayer = ExoPlayer.Builder(context).build().apply {
             addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -67,10 +69,9 @@ class AudioPlayerService(private val context: Context) {
         }
     }
 
-    /**
-     * Load audio từ URL bất kỳ
-     */
     fun loadAudioFromUrl(audioUrl: String) {
+        if (audioUrl == _currentUrl.value) return // Don't reload same URL
+        
         if (audioUrl.isEmpty()) {
             _error.value = "URL audio không hợp lệ"
             return
@@ -79,6 +80,7 @@ class AudioPlayerService(private val context: Context) {
         try {
             _isLoading.value = true
             _error.value = null
+            _currentUrl.value = audioUrl
 
             exoPlayer?.let { player ->
                 val mediaItem = MediaItem.fromUri(audioUrl)
@@ -89,13 +91,6 @@ class AudioPlayerService(private val context: Context) {
             _error.value = "Không thể load audio: ${e.message}"
             _isLoading.value = false
         }
-    }
-
-    /**
-     * Load audio "Đắc Nhân Tâm" (fallback cho demo)
-     */
-    fun loadDacNhanTamAudio() {
-        loadAudioFromUrl(dacNhanTamAudioUrl)
     }
 
     fun play() {
@@ -135,16 +130,12 @@ class AudioPlayerService(private val context: Context) {
         }
     }
 
-    private fun updatePlaybackState() {
+    fun updatePlaybackState() {
         exoPlayer?.let { player ->
             _currentPosition.value = player.currentPosition
             _duration.value = player.duration
         }
     }
-
-    fun getCurrentPosition(): Long = exoPlayer?.currentPosition ?: 0L
-
-    fun getDuration(): Long = exoPlayer?.duration ?: 0L
 
     fun release() {
         exoPlayer?.release()

@@ -33,108 +33,113 @@ import coil.request.ImageRequest
 import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.model.BookPart
 import com.kienvo.rosach.repository.BookRepository
-import com.kienvo.rosach.service.AudioPlayerService
 import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.viewmodel.PlayerViewModel
+import com.kienvo.rosach.viewmodel.UserViewModel
 import java.util.Locale
 
-/**
- * Unified Player Screen for all types of books (Normal, Kids, Astronomy)
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioPlayerScreen(
     navController: NavController,
     bookId: String?,
     bookViewModel: BookViewModel = viewModel(),
-    playerViewModel: PlayerViewModel = viewModel()
+    playerViewModel: PlayerViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val bookRepository = remember { BookRepository() }
 
-    // State
-    var book by remember { mutableStateOf<Book?>(null) }
+    // State from ViewModel (GLOBAL)
+    val book by playerViewModel.currentBook.collectAsState()
+    val isPlaying by playerViewModel.isPlaying.collectAsState()
+    val isAudioLoading by playerViewModel.isLoading.collectAsState()
+    val currentPosition by playerViewModel.currentPosition.collectAsState()
+    val duration by playerViewModel.duration.collectAsState()
+    val audioError by playerViewModel.error.collectAsState()
+
     var bookParts by remember { mutableStateOf<List<BookPart>>(emptyList()) }
     var currentPartIndex by remember { mutableIntStateOf(0) }
-    var isLoadingData by remember { mutableStateOf(true) }
+    var isLoadingData by remember { mutableStateOf(false) }
     var showPartsSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
-
-    // Audio player service
-    val audioService = remember { AudioPlayerService(context) }
-    val isPlaying by audioService.isPlaying.collectAsState()
-    val isAudioLoading by audioService.isLoading.collectAsState()
-    val currentPosition by audioService.currentPosition.collectAsState()
-    val duration by audioService.duration.collectAsState()
-    val audioError by audioService.error.collectAsState()
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
-    // DYNAMIC THEME BASED ON BOOK TYPE
-    val accentColor = when (book?.type) {
-        "kid" -> Color(0xFFFFB74D) // Orange for kids
-        "astronomy" -> Color(0xFF7E57C2) // Purple for space
-        else -> Yellow // Default yellow
+    // Update slider local state while dragging or when service updates
+    LaunchedEffect(currentPosition, duration) {
+        if (!isDragging && duration > 0) {
+            sliderPosition = currentPosition.toFloat() / duration.toFloat()
+        }
     }
 
+    // Periodic progress saving
+    LaunchedEffect(isPlaying, currentPosition) {
+        if (isPlaying && book != null && currentPosition > 0 && duration > 0) {
+            if (currentPosition % 10000 < 1000) {
+                userViewModel.updateListeningProgress(
+                    bookId = book!!.id,
+                    bookTitle = book!!.title,
+                    lastPosition = currentPosition,
+                    duration = duration,
+                    progress = currentPosition.toFloat() / duration.toFloat()
+                )
+            }
+        }
+    }
+
+    // Load data only if it's a NEW book
+    LaunchedEffect(bookId) {
+        if (bookId != null && (book == null || book?.id != bookId)) {
+            isLoadingData = true
+            val fetchedBook = bookViewModel.getBookById(bookId)
+            val fetchedParts = bookRepository.getBookParts(bookId)
+            bookParts = fetchedParts
+
+            if (fetchedBook != null) {
+                // Determine if we should resume
+                val lastPos = userViewModel.getLastPosition(bookId)
+                
+                // Play the book through global ViewModel
+                if (fetchedParts.isNotEmpty()) {
+                    currentPartIndex = 0
+                    playerViewModel.playBook(fetchedBook, fetchedParts[0].audioUrl)
+                    if (lastPos > 0) {
+                        playerViewModel.seekTo(lastPos)
+                    }
+                } else {
+                    playerViewModel.playBook(fetchedBook)
+                }
+            }
+            isLoadingData = false
+        } else if (bookId != null && book?.id == bookId) {
+            // Same book, just load parts for the sheet
+            bookParts = bookRepository.getBookParts(bookId)
+        }
+    }
+
+    // Dynamic theme
+    val accentColor = when (book?.type) {
+        "kid" -> Color(0xFFFFB74D)
+        "astronomy" -> Color(0xFF7E57C2)
+        else -> Yellow
+    }
     val playerBackground = when (book?.type) {
         "kid" -> Brush.verticalGradient(listOf(Color(0xFFE57373).copy(0.4f), Color.Black))
         "astronomy" -> Brush.verticalGradient(listOf(Color(0xFF283593).copy(0.4f), Color.Black))
         else -> Brush.verticalGradient(listOf(Color.Black.copy(0.7f), Color.Black.copy(0.9f)))
     }
 
-    // Helper to load part
     fun loadPart(index: Int) {
         if (index in bookParts.indices) {
             currentPartIndex = index
-            audioService.loadAudioFromUrl(bookParts[index].audioUrl)
-            audioService.play()
+            playerViewModel.loadUrl(bookParts[index].audioUrl)
+            playerViewModel.togglePlayPause() // Play if paused
         }
     }
-
-    // Initialize
-    LaunchedEffect(bookId) {
-        if (bookId != null) {
-            isLoadingData = true
-            val fetchedBook = bookViewModel.getBookById(bookId)
-            book = fetchedBook
-            val fetchedParts = bookRepository.getBookParts(bookId)
-            bookParts = fetchedParts
-
-            fetchedBook?.let { playerViewModel.playBook(it) }
-
-            if (fetchedParts.isNotEmpty()) {
-                currentPartIndex = 0
-                audioService.loadAudioFromUrl(fetchedParts[0].audioUrl)
-            }
-            isLoadingData = false
-        }
-    }
-
-    // Sync
-    LaunchedEffect(isPlaying) {
-        book?.let { if (isPlaying) playerViewModel.playBook(it) }
-    }
-
-    LaunchedEffect(currentPosition, duration) {
-        if (!isDragging && duration > 0) {
-            sliderPosition = currentPosition.toFloat() / duration.toFloat()
-            playerViewModel.updatePosition(sliderPosition)
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { audioService.release() }
-    }
-
-    val currentPart = if (bookParts.isNotEmpty() && currentPartIndex < bookParts.size) {
-        bookParts[currentPartIndex]
-    } else null
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // LAYER 1: BLURRED BACKGROUND
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current).data(book?.coverUrl ?: "").crossfade(true).build(),
             contentDescription = null,
@@ -143,7 +148,6 @@ fun AudioPlayerScreen(
         )
         Box(modifier = Modifier.fillMaxSize().background(playerBackground))
 
-        // LAYER 2: CONTENT
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
@@ -177,39 +181,26 @@ fun AudioPlayerScreen(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
-
-                    // Cover
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current).data(book?.coverUrl ?: "").crossfade(true).build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(if (book?.type == "kid") 240.dp else 280.dp).clip(RoundedCornerShape(16.dp))
                     )
-
                     Spacer(modifier = Modifier.height(32.dp))
-
-                    // Info
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = book?.title ?: "Đang tải...", style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                        Text(text = book?.title ?: "Đang chọn sách...", style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = book?.author ?: "", style = MaterialTheme.typography.bodyLarge, color = Color.LightGray, textAlign = TextAlign.Center)
-                        if (currentPart != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = currentPart.title, style = MaterialTheme.typography.bodyMedium, color = accentColor, textAlign = TextAlign.Center)
-                        }
                     }
-
                     Spacer(modifier = Modifier.height(40.dp))
-
-                    // Progress
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Slider(
                             value = sliderPosition,
                             onValueChange = { sliderPosition = it; isDragging = true },
                             onValueChangeFinished = {
                                 isDragging = false
-                                val newPos = (sliderPosition * duration).toLong()
-                                audioService.seekTo(newPos)
+                                playerViewModel.updatePosition(sliderPosition)
                             },
                             colors = SliderDefaults.colors(thumbColor = accentColor, activeTrackColor = accentColor, inactiveTrackColor = Color.Gray),
                             modifier = Modifier.fillMaxWidth()
@@ -219,36 +210,31 @@ fun AudioPlayerScreen(
                             Text(text = formatTime(duration), color = Color.LightGray, fontSize = 12.sp)
                         }
                     }
-
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Controls
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { if (currentPartIndex > 0) loadPart(currentPartIndex - 1) }, enabled = currentPartIndex > 0) {
                             Icon(Icons.Default.SkipPrevious, null, tint = if (currentPartIndex > 0) Color.White else Color.Gray, modifier = Modifier.size(32.dp))
                         }
-                        IconButton(onClick = { audioService.seekBackward() }) {
+                        IconButton(onClick = { playerViewModel.seekBackward() }) {
                             Icon(Icons.Default.FastRewind, null, tint = Color.White, modifier = Modifier.size(24.dp))
                         }
-                        FloatingActionButton(onClick = { audioService.togglePlayPause() }, containerColor = accentColor, modifier = Modifier.size(72.dp), shape = CircleShape) {
+                        FloatingActionButton(onClick = { playerViewModel.togglePlayPause() }, containerColor = accentColor, modifier = Modifier.size(72.dp), shape = CircleShape) {
                             if (isAudioLoading) CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(32.dp))
                             else Icon(if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(40.dp))
                         }
-                        IconButton(onClick = { audioService.seekForward() }) {
+                        IconButton(onClick = { playerViewModel.seekForward() }) {
                             Icon(Icons.Default.FastForward, null, tint = Color.White, modifier = Modifier.size(24.dp))
                         }
                         IconButton(onClick = { if (currentPartIndex < bookParts.size - 1) loadPart(currentPartIndex + 1) }, enabled = currentPartIndex < bookParts.size - 1) {
                             Icon(Icons.Default.SkipNext, null, tint = if (currentPartIndex < bookParts.size - 1) Color.White else Color.Gray, modifier = Modifier.size(32.dp))
                         }
                     }
-
                     if (audioError != null) Text(text = audioError!!, color = Color.Red, fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 16.dp))
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }
 
-        // Chapters Sheet
         if (showPartsSheet) {
             ModalBottomSheet(onDismissRequest = { showPartsSheet = false }, sheetState = sheetState, containerColor = Color(0xFF1E1E1E), contentColor = Color.White) {
                 Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp)) {

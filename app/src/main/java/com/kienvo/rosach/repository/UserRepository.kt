@@ -214,6 +214,30 @@ class UserRepository {
         }
     }
 
+    // Xóa một mục khỏi lịch sử nghe
+    suspend fun removeHistoryItem(userId: String, bookId: String): Result<Unit> {
+        return try {
+            val profile = getUserProfile(userId).getOrNull()
+            if (profile != null) {
+                val updatedHistory = profile.listeningHistory.filter { it.bookId != bookId }
+                
+                usersCollection.document(userId).update(
+                    mapOf(
+                        "listeningHistory" to updatedHistory,
+                        "lastUpdated" to System.currentTimeMillis()
+                    )
+                ).await()
+                Log.d(TAG, "Listening history item removed: $bookId")
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("User profile not found"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing history item", e)
+            Result.failure(e)
+        }
+    }
+
     // Lấy lịch sử nghe của một cuốn sách cụ thể
     suspend fun getListeningRecordForBook(userId: String, bookId: String): ListeningRecord? {
         return try {
