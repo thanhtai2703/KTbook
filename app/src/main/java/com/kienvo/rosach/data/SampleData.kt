@@ -86,7 +86,7 @@ object SampleData {
 
     // ============ ASTRONOMY BOOKS DATA ============
     private val astronomyBooksBase = listOf(
-        Book("astro_1", "Vũ Trụ Trong Vỏ Hạt Dẻ", "Stephen Hawking", "https://nhasachmienphi.com/images/thumbnail/nhasachmienphi-vu-tru-trong-vo-hat-de.jpg", "astronomy", 4.9),
+        Book("astro_1", "Vũ Trụ Trong Vỏ Hạt Dẻ", "Stephen Hawking", "https://nhasachmienphi.com/images/thumbnail/nhasachmienphi-vu-tru-trong-vo-hat-de.jpg", "astronomy", 4.9,description ="Kiệt tác của Stephen Hawking giải mã những bí ẩn lớn nhất của vũ trụ: từ Thuyết Tương đối, lỗ đen cho đến tính chất của thời gian, được trình bày bằng ngôn ngữ dí dỏm và hình ảnh trực quan."),
         Book("astro_2", "Lược Sử Vũ Trụ", "Anne Rooney", "https://salt.tikicdn.com/cache/w1200/ts/product/3d/0d/3a/de9baba1edbd905adfd06d3a70266abb.jpg", "astronomy", 4.8),
         Book("astro_3", "Vũ Trụ", "Carl Sagan", "https://dtv-ebook.com.vn/images/files_2/2022/012022/vu-tru-carl-sagan.jpg", "astronomy", 4.9),
         Book("astro_4", "Sách Khởi Nguyên Của Vũ Trụ: Lịch Sử 14 Tỉ Năm Tiến Hóa", "Neil deGrasse Tyson", "https://salt.tikicdn.com/cache/750x750/ts/product/7a/5c/5f/ddad2a2bbc6b2cfe44035279e09e3f24.jpg.webp", "astronomy", 4.7),

@@ -106,7 +106,7 @@ fun SearchScreen(
                                 when (category.slug) {
                                     "top-thinh-hanh" -> navController.navigate("home")
                                     "sach-chua-lanh" -> navController.navigate(Screen.SelfHelp.route)
-                                    "top-ebook" -> navController.navigate(Screen.Ebook.route)
+                                    //"top-ebook" -> navController.navigate(Screen.Ebook.route)
                                     "tieu-thuyet-trinh-tham" -> navController.navigate(Screen.Detective.route)
                                     "kids" -> navController.navigate(Screen.Kids.route)
                                     "astronomy" -> navController.navigate(Screen.Astronomy.route)

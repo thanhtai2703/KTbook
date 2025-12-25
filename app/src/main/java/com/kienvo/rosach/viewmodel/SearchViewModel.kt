@@ -46,13 +46,28 @@ class SearchViewModel : ViewModel() {
             _isCategoriesLoading.value = true
             try {
                 val result = categoryRepository.getAllCategories()
-                _categories.value = result
+                if (result.isNotEmpty()) {
+                    _categories.value = result
+                } else {
+                    // Fallback to manual list if DB is empty
+                    _categories.value = getFallbackCategories()
+                }
             } catch (e: Exception) {
-                // Log error
+                _categories.value = getFallbackCategories()
             } finally {
                 _isCategoriesLoading.value = false
             }
         }
+    }
+
+    private fun getFallbackCategories(): List<BookCategory> {
+        return listOf(
+            BookCategory(id = "1", name = "Sách nói", slug = "top-thinh-hanh", color = "#6D4C41", imageUrl = "https://nld.mediacdn.vn/2021/1/22/13-cay-cam-ngot-161132379604435791636.jpg"),
+            BookCategory(id = "2", name = "Self-Help", slug = "sach-chua-lanh", color = "#2E7D32", imageUrl = "https://davibooks.vn/stores/uploads/z/z4729024325679_319a5b9666920fe8e785dcf3f0102996__97337_image2_800_big.jpg"),
+            BookCategory(id = "3", name = "Trinh thám", slug = "tieu-thuyet-trinh-tham", color = "#BF360C", imageUrl = "https://salt.tikicdn.com/cache/w1200/ts/product/f4/e3/c2/c0397072522730248232930229342734.jpg"),
+            BookCategory(id = "4", name = "Thiếu nhi", slug = "kids", color = "#D81B60", imageUrl = "https://cdn1.fahasa.com/media/flashmagazine/images/page_images/than_mong_mo_va_cuoc_chien_giac_mo/2023_05_09_16_40_10_1-390x510.jpg"),
+            BookCategory(id = "5", name = "Thiên văn", slug = "astronomy", color = "#283593", imageUrl = "https://dtv-ebook.com.vn/images/files_2/2022/012022/vu-tru-carl-sagan.jpg")
+        )
     }
 
     private fun loadTrendingSearches() {

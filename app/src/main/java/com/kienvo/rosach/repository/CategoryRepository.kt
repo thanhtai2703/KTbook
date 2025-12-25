@@ -33,10 +33,12 @@ class CategoryRepository(
                         isActive = doc.getBoolean("isActive") ?: true
                     )
                 } catch (e: Exception) {
+                    android.util.Log.e("CategoryRepo", "Error mapping doc ${doc.id}", e)
                     null
                 }
             }
         } catch (e: Exception) {
+            android.util.Log.e("CategoryRepo", "Error fetching categories", e)
             emptyList()
         }
     }

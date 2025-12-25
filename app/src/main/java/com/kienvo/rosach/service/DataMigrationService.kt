@@ -167,7 +167,7 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "tieu-thuyet-trinh-tham",
                 "type" to "audiobook",
                 "description" to "Những câu chuyện trinh thám hấp dẫn",
-                "imageUrl" to "https://salt.tikicdn.com/cache/w1200/ts/product/f4/e3/c2/c0397072522730248232930229342734.jpg",
+                "imageUrl" to "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=1000&auto=format&fit=crop", // Hình ảnh Sherlock Holmes/Kính lúp từ Unsplash
                 "color" to "#BF360C",
                 "order" to 3,
                 "isActive" to true,
