@@ -114,15 +114,6 @@ fun PersonalScreen(
                 )
 
                 SettingsSection(
-                    title = "Ứng dụng",
-                    items = listOf(
-                        SettingItem("Giao diện", Icons.Default.Palette),
-                        SettingItem("Ngôn ngữ", Icons.Default.Language)
-                    ),
-                    navController = navController
-                )
-
-                SettingsSection(
                     title = "Hỗ trợ",
                     items = listOf(
                         SettingItem("Trung tâm trợ giúp", Icons.Default.Help),
