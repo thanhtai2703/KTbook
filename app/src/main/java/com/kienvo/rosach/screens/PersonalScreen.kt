@@ -1,6 +1,9 @@
 package com.kienvo.rosach.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -45,6 +48,13 @@ fun PersonalScreen(
     val userProfile by userViewModel.userProfile.collectAsState()
     val isLoading by userViewModel.isLoading.collectAsState()
 
+    // Launcher để chọn ảnh từ máy
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let { userViewModel.updateAvatar(it) }
+    }
+
     Scaffold(
         containerColor = DarkBg,
         topBar = {
@@ -88,7 +98,8 @@ fun PersonalScreen(
                     avatarUrl = userProfile?.avatarUrl ?: "",
                     createdAt = userProfile?.createdAt ?: 0L,
                     onEditClick = {
-                        navController?.navigate("settings/profile_info")
+                        // Mở bộ chọn ảnh khi bấm edit
+                        launcher.launch("image/*")
                     }
                 )
 
@@ -197,22 +208,42 @@ fun ProfileHeader(
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile Image
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(
-                        if (avatarUrl.isNotEmpty()) avatarUrl
-                        else "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-                    )
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Profile Image",
-                contentScale = ContentScale.Crop,
+            // Profile Image with Edit overlay
+            Box(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
                     .background(Color.Gray)
-            )
+                    .clickable { onEditClick() }
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(
+                            if (avatarUrl.isNotEmpty()) avatarUrl
+                            else "https://icons.veryicon.com/png/o/miscellaneous/common-icons-31/default-avatar-2.png"
+                        )
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                
+                // Camera Icon overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 

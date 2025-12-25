@@ -157,7 +157,7 @@ class LibraryViewModel : ViewModel() {
                 bookTitle = book.title,
                 lastPosition = 0L,
                 duration = 0L,
-                progress = 0.1f, // Mặc định là đã bắt đầu nghe
+                progress = 0.0f, // Khởi tạo với 0%
                 lastListenedAt = System.currentTimeMillis()
             )
             userRepository.updateListeningHistory(userId, record)

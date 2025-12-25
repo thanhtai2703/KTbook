@@ -1,8 +1,10 @@
 package com.kienvo.rosach.repository
 
+import android.net.Uri
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.kienvo.rosach.data.ListeningRecord
 import com.kienvo.rosach.data.UserProfile
 import com.kienvo.rosach.data.UserSettings
@@ -11,10 +13,24 @@ import kotlinx.coroutines.tasks.await
 class UserRepository {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
+    private val storage = FirebaseStorage.getInstance()
     private val usersCollection = firestore.collection("users")
 
     companion object {
         private const val TAG = "UserRepository"
+    }
+
+    // Tải ảnh lên Firebase Storage
+    suspend fun uploadAvatar(userId: String, imageUri: Uri): Result<String> {
+        return try {
+            val ref = storage.reference.child("avatars/$userId.jpg")
+            ref.putFile(imageUri).await()
+            val url = ref.downloadUrl.await().toString()
+            Result.success(url)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error uploading avatar", e)
+            Result.failure(e)
+        }
     }
 
     // Lấy UID của user hiện tại

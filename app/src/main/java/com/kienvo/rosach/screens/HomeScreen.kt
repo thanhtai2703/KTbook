@@ -63,6 +63,7 @@ import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.PaleYellow
 import com.kienvo.rosach.ui.theme.PaleYellowDark
 import com.kienvo.rosach.viewmodel.BookViewModel
+import com.kienvo.rosach.viewmodel.UserViewModel
 import com.kienvo.rosach.widgets.BookSection
 import com.kienvo.rosach.widgets.FonosCarousel
 import com.kienvo.rosach.widgets.VerticalBookSection
@@ -75,7 +76,8 @@ fun HomeScreen(
     navController: NavController? = null,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    bookViewModel: BookViewModel = viewModel()
+    bookViewModel: BookViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
     // Load data
     val allBooks by bookViewModel.allBooks.collectAsState()
@@ -84,6 +86,9 @@ fun HomeScreen(
     val booksByCategory by bookViewModel.booksByCategory.collectAsState()
     val isLoading by bookViewModel.isLoading.collectAsState()
     val error by bookViewModel.error.collectAsState()
+
+    // User Profile for real avatar
+    val userProfile by userViewModel.userProfile.collectAsState()
 
     // [MỚI] Lấy các sections đã được tính sẵn từ ViewModel (không shuffle lại)
     val recommendedBooks by bookViewModel.recommendedBooks.collectAsState()
@@ -96,6 +101,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         bookViewModel.loadAllBooks()
         bookViewModel.loadAllCategoriesWithBooks()
+        userViewModel.loadCurrentUserProfile()
     }
 
     val carouselBooks = if (featuredBooks.isNotEmpty()) featuredBooks else allBooks.take(10)
@@ -111,7 +117,10 @@ fun HomeScreen(
     val auth = FirebaseAuth.getInstance()
     var currentUser by remember { mutableStateOf(auth.currentUser) }
     var isLoggedIn by remember { mutableStateOf(currentUser != null) }
-    val userAvatarUrl = currentUser?.photoUrl?.toString()
+    
+    // Sử dụng avatar từ profile Firestore trước, sau đó mới đến Firebase Auth, cuối cùng là placeholder
+    val userAvatarUrl = userProfile?.avatarUrl?.ifEmpty { null } 
+        ?: currentUser?.photoUrl?.toString()
         ?: "https://icons.veryicon.com/png/o/miscellaneous/common-icons-31/default-avatar-2.png"
 
     DisposableEffect(auth) {
