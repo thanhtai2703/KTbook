@@ -170,7 +170,7 @@ fun SelfHelpScreen(navController: NavController) {
                                 rating = book.rating,
                                 reviewCount = 104,
                                 onClick = {
-                                    navController.navigate("detail/${book.id}")
+                                    navController.navigate("audio_player/${book.id}")
                                 }
                             )
                         }
@@ -188,7 +188,7 @@ fun SelfHelpScreen(navController: NavController) {
                                 rating = book.rating,
                                 reviewCount = 104,
                                 onClick = {
-                                    navController.navigate("detail/${book.id}")
+                                    navController.navigate("audio_player/${book.id}")
                                 }
                             )
                             Spacer(Modifier.height(24.dp))
