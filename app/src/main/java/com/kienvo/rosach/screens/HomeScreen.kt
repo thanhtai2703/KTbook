@@ -25,12 +25,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +62,7 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.kienvo.rosach.model.Book
 import com.kienvo.rosach.ui.theme.DarkBg
+import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.ui.theme.PaleYellow
 import com.kienvo.rosach.ui.theme.PaleYellowDark
 import com.kienvo.rosach.viewmodel.BookViewModel
@@ -456,6 +459,24 @@ fun HomeScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(errorMessage, color = Color.Red)
             }
+        }
+
+        // --- LAYER 4: AI LIBRARIAN FAB ---
+        FloatingActionButton(
+            onClick = { navController?.navigate("ai_chat") },
+            containerColor = Color(0xFF1A237E), // Deep Blue/Indigo
+            contentColor = Yellow,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 110.dp) // Tránh che MiniPlayer
+                .size(56.dp),
+            shape = CircleShape
+        ) {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = "AI Librarian",
+                modifier = Modifier.size(28.dp)
+            )
         }
     } // Đóng Box
 } // Đóng HomeScreen

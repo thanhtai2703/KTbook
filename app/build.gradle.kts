@@ -57,6 +57,9 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.2.1")
     implementation("androidx.media3:media3-ui:1.2.1")
 
+    // Google Gemini AI SDK
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))   // Import the Firebase BoM
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-storage")

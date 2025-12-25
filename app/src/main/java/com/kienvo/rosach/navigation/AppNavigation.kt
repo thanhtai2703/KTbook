@@ -27,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
+import com.kienvo.rosach.screens.ChatRecommendScreen
 //import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
 import com.kienvo.rosach.screens.AstronomyDetailScreen
 import com.kienvo.rosach.screens.AstronomyScreen
@@ -261,6 +262,7 @@ fun AppNavigation(
 
                     composable("search") { SearchScreen(navController) }
                     composable("active_search") { ActiveSearchScreen(navController) }
+                    composable("ai_chat") { ChatRecommendScreen(navController) }
                     composable("big_banner_detail") {
                         BigBannerDetailScreen(navController = navController)
                     }
