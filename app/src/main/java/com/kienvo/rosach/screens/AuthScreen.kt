@@ -25,19 +25,54 @@ import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.viewmodel.AuthState
 import com.kienvo.rosach.viewmodel.AuthViewModel
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun AuthScreen(
     navController: NavController? = null,
     authViewModel: AuthViewModel
 ) {
+    val context = LocalContext.current
     var isLoginMode by remember { mutableStateOf(true) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    
+    // State cho Quên mật khẩu
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
 
     val authState by authViewModel.authState.collectAsState()
+
+    // --- GOOGLE SIGN IN CONFIG ---
+    // QUAN TRỌNG: Thay default_web_client_id bằng Web Client ID thật từ Firebase Console
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken("921004560004-s4d1pp0p98d9avijhnpdurg0mftet4c7.apps.googleusercontent.com") // Template ID
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account.idToken?.let { token ->
+                authViewModel.loginWithGoogle(token)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AuthScreen", "Google sign in failed: ${e.message}")
+        }
+    }
 
     // Navigate when authenticated
     LaunchedEffect(authState) {
@@ -46,6 +81,13 @@ fun AuthScreen(
                 popUpTo("auth") { inclusive = true }
             }
         }
+        
+        // Hiện thông báo khi gửi email thành công
+        if (authState is AuthState.PasswordResetSent) {
+            showForgotPasswordDialog = false
+            // Có thể dùng Snackbar hoặc Toast ở đây
+            authViewModel.clearError() // Reset state
+        }
     }
 
     Box(
@@ -53,6 +95,48 @@ fun AuthScreen(
             .fillMaxSize()
             .background(DarkBg)
     ) {
+        // --- DIALOG QUÊN MẬT KHẨU ---
+        if (showForgotPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showForgotPasswordDialog = false },
+                title = { Text("Quên mật khẩu?") },
+                text = {
+                    Column {
+                        Text("Nhập email của bạn để nhận liên kết đặt lại mật khẩu.", color = Color.Gray, fontSize = 14.sp)
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = resetEmail,
+                            onValueChange = { resetEmail = it },
+                            label = { Text("Email") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { 
+                            if (resetEmail.isNotEmpty()) {
+                                authViewModel.sendPasswordResetEmail(resetEmail)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Yellow),
+                        enabled = authState !is AuthState.Loading
+                    ) {
+                        Text("Gửi email", color = Color.Black)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showForgotPasswordDialog = false }) {
+                        Text("Hủy", color = Color.Gray)
+                    }
+                },
+                containerColor = Color(0xFF2A2A2A),
+                titleContentColor = Color.White,
+                textContentColor = Color.White
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -282,7 +366,7 @@ fun AuthScreen(
 
             if (isLoginMode) {
                 TextButton(
-                    onClick = { /* Handle forgot password */ }
+                    onClick = { showForgotPasswordDialog = true }
                 ) {
                     Text(
                         text = "Quên mật khẩu?",
@@ -318,14 +402,17 @@ fun AuthScreen(
 
             // Social login buttons
             OutlinedButton(
-                onClick = { /* Handle Google login */ },
+                onClick = { 
+                    googleLauncher.launch(googleSignInClient.signInIntent)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.White
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = authState !is AuthState.Loading
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,

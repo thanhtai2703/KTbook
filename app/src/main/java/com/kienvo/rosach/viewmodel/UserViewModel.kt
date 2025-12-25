@@ -128,7 +128,29 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    // Cập nhật avatar
+    // Cập nhật avatar từ Uri (chọn từ gallery)
+    fun updateAvatar(uri: android.net.Uri) {
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            _isLoading.value = true
+            val uploadResult = userRepository.uploadAvatar(userId, uri)
+            
+            uploadResult.onSuccess { url ->
+                // Sau khi upload thành công Storage, cập nhật URL vào Firestore
+                val updateResult = userRepository.updateAvatarUrl(userId, url)
+                updateResult.onSuccess {
+                    loadUserProfile(userId)
+                }.onFailure { e ->
+                    _error.value = "Lỗi cập nhật profile: ${e.message}"
+                }
+            }.onFailure { e ->
+                _error.value = "Lỗi tải ảnh lên: ${e.message}"
+            }
+            _isLoading.value = false
+        }
+    }
+
+    // Cập nhật avatar trực tiếp bằng URL (nếu có sẵn)
     fun updateAvatar(avatarUrl: String) {
         val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {

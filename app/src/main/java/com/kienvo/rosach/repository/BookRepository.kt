@@ -41,7 +41,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -80,7 +81,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -109,13 +111,33 @@ class BookRepository(
                     coverUrl = doc.getString("coverUrl") ?: "",
                     type = doc.getString("type") ?: "audiobook",
                     rating = doc.getDouble("rating") ?: 0.0,
-                    rank = doc.getLong("rank")?.toInt() ?: 0
+                    rank = doc.getLong("rank")?.toInt() ?: 0,
+                    description = doc.getString("description") ?: ""
                 )
             } else {
                 null
             }
         } catch (e: Exception) {
             null
+        }
+    }
+
+    /**
+     * Lấy danh sách sách theo một mảng các IDs
+     */
+    suspend fun getBooksByIds(bookIds: List<String>): List<Book> {
+        if (bookIds.isEmpty()) return emptyList()
+        
+        return try {
+            // Firestore whereIn có giới hạn 30 item mỗi lần query.
+            // Để đơn giản và an toàn, chúng ta fetch từng book (có thể tối ưu sau bằng batch/chunk)
+            val books = mutableListOf<Book>()
+            for (id in bookIds) {
+                getBookById(id)?.let { books.add(it) }
+            }
+            books
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
@@ -139,7 +161,8 @@ class BookRepository(
                         coverUrl = doc.getString("coverUrl") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         rating = doc.getDouble("rating") ?: 0.0,
-                        rank = doc.getLong("rank")?.toInt() ?: 0
+                        rank = doc.getLong("rank")?.toInt() ?: 0,
+                        description = doc.getString("description") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -188,7 +211,8 @@ class BookRepository(
                                 coverUrl = doc.getString("coverUrl") ?: "",
                                 type = doc.getString("type") ?: "audiobook",
                                 rating = doc.getDouble("rating") ?: 0.0,
-                                rank = doc.getLong("rank")?.toInt() ?: 0
+                                rank = doc.getLong("rank")?.toInt() ?: 0,
+                                description = doc.getString("description") ?: ""
                             )
                         } catch (e: Exception) {
                             null

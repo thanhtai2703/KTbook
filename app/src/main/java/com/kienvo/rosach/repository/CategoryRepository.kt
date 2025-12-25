@@ -27,14 +27,18 @@ class CategoryRepository(
                         slug = doc.getString("slug") ?: "",
                         type = doc.getString("type") ?: "audiobook",
                         description = doc.getString("description") ?: "",
+                        imageUrl = doc.getString("imageUrl") ?: "",
+                        color = doc.getString("color") ?: "#6D4C41",
                         order = doc.getLong("order")?.toInt() ?: 0,
                         isActive = doc.getBoolean("isActive") ?: true
                     )
                 } catch (e: Exception) {
+                    android.util.Log.e("CategoryRepo", "Error mapping doc ${doc.id}", e)
                     null
                 }
             }
         } catch (e: Exception) {
+            android.util.Log.e("CategoryRepo", "Error fetching categories", e)
             emptyList()
         }
     }

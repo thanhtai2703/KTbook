@@ -6,6 +6,8 @@ data class BookCategory(
     val slug: String = "",
     val type: String = "audiobook",
     val description: String = "",
+    val imageUrl: String = "",
+    val color: String = "#6D4C41",   // Hex color string
     val order: Int = 0,
     val isActive: Boolean = true
 )

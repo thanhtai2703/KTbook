@@ -47,17 +47,19 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
         categories.add(book.type) // "audiobook" hoặc "ebook"
 
         when {
-            book.id.toIntOrNull() in 9..16 -> categories.add("popular")
-            book.id.toIntOrNull() in 17..24 -> categories.add("healing")
-            book.id.toIntOrNull() in 25..32 -> categories.add("detective")
-            book.id == "33" || book.id == "34" || book.id == "35" || book.id == "36" -> categories.add("top")
-            book.id.toIntOrNull() in 37..39 -> categories.add("free")
-            book.id.toIntOrNull() in 40..42 -> categories.add("literature")
-            book.id.toIntOrNull() in 43..44 -> categories.add("health")
-            book.id.toIntOrNull() in 45..46 -> categories.add("psychology")
-            book.id.toIntOrNull() in 47..48 -> categories.add("lifestyle")
-            book.id.toIntOrNull() in 49..50 -> categories.add("philosophy")
-            book.id.toIntOrNull() in 51..52 -> categories.add("business")
+            book.id.startsWith("popular_") -> categories.add("popular")
+            book.id.startsWith("healing_") -> categories.add("healing")
+            book.id.startsWith("detective_") -> categories.add("detective")
+            book.id.startsWith("top_ebook_") -> categories.add("top")
+            book.id.startsWith("free_ebook_") -> categories.add("free")
+            book.id.startsWith("literature_") -> categories.add("literature")
+            book.id.startsWith("health_") -> categories.add("health")
+            book.id.startsWith("psychology_") -> categories.add("psychology")
+            book.id.startsWith("lifestyle_") -> categories.add("lifestyle")
+            book.id.startsWith("philosophy_") -> categories.add("philosophy")
+            book.id.startsWith("business_") -> categories.add("business")
+            book.type == "kid" -> categories.add("kids")
+            book.type == "astronomy" -> categories.add("astronomy")
         }
 
         val bookData = hashMapOf(
@@ -66,6 +68,7 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
             "author" to book.author,
             "coverUrl" to book.coverUrl,
             "type" to book.type,
+            "description" to book.description,
             "categories" to categories,
             "tags" to emptyList<String>(),
             "rating" to book.rating,
@@ -126,7 +129,7 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
     private fun getAudioUrlForBook(bookId: String, partNumber: Int): String {
         // Ví dụ URL của Đắc Nhân Tâm
         return when (bookId) {
-            "2" -> "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
+            "audio_2" -> "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
             // Thêm các sách khác ở đây
             else -> "https://example.com/audio/${bookId}_part_$partNumber.mp3"
         }
@@ -140,6 +143,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "top-thinh-hanh",
                 "type" to "audiobook",
                 "description" to "Những cuốn sách được nghe nhiều nhất",
+                "imageUrl" to "https://nld.mediacdn.vn/2018/3/24/sach-1521858607292758740290.jpg",
+                "color" to "#6D4C41",
                 "order" to 1,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -150,6 +155,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "sach-chua-lanh",
                 "type" to "audiobook",
                 "description" to "Sách giúp thư giãn và chữa lành tâm hồn",
+                "imageUrl" to "https://davibooks.vn/stores/uploads/z/z4729024325679_319a5b9666920fe8e785dcf3f0102996__97337_image2_800_big.jpg",
+                "color" to "#2E7D32",
                 "order" to 2,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -160,6 +167,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "tieu-thuyet-trinh-tham",
                 "type" to "audiobook",
                 "description" to "Những câu chuyện trinh thám hấp dẫn",
+                "imageUrl" to "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=1000&auto=format&fit=crop", // Hình ảnh Sherlock Holmes/Kính lúp từ Unsplash
+                "color" to "#BF360C",
                 "order" to 3,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -170,6 +179,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "top-ebook",
                 "type" to "ebook",
                 "description" to "Ebook được đánh giá cao nhất",
+                "imageUrl" to "https://dtv-ebook.com.vn/images/files_2/2020/hieu-ve-trai-tim-minh-niem.jpg",
+                "color" to "#0D47A1",
                 "order" to 4,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -180,6 +191,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "ebook-mien-phi",
                 "type" to "ebook",
                 "description" to "Những cuốn sách kinh điển miễn phí",
+                "imageUrl" to "https://product.hstatic.net/200000017360/product/bia_sodo3-b1_b32d805ef78846fab8d0d6c1c7fc887b_master.jpg",
+                "color" to "#546E7A",
                 "order" to 5,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -190,6 +203,8 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "van-hoc",
                 "type" to "ebook",
                 "description" to "Những tác phẩm văn học kinh điển",
+                "imageUrl" to "https://thegioicotich.vn/wp-content/uploads/2019/09/de-men-phieu-luu-ky-chuong-4-cua-nha-van-to-hoai.png",
+                "color" to "#004D40",
                 "order" to 6,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -200,7 +215,33 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "slug" to "kinh-doanh",
                 "type" to "ebook",
                 "description" to "Sách về kinh doanh và đầu tư",
+                "imageUrl" to "https://bizbooks.vn/uploads/images/2023/thang-10/1-nam-cham-tai-chinh-mt.jpg",
+                "color" to "#37474F",
                 "order" to 7,
+                "isActive" to true,
+                "createdAt" to com.google.firebase.Timestamp.now()
+            ),
+            hashMapOf(
+                "id" to "cat_kids",
+                "name" to "Truyện Thiếu Nhi",
+                "slug" to "kids",
+                "type" to "kid",
+                "description" to "Truyện kể bé nghe",
+                "imageUrl" to "https://cdn1.fahasa.com/media/flashmagazine/images/page_images/than_mong_mo_va_cuoc_chien_giac_mo/2023_05_09_16_40_10_1-390x510.jpg",
+                "color" to "#D81B60",
+                "order" to 8,
+                "isActive" to true,
+                "createdAt" to com.google.firebase.Timestamp.now()
+            ),
+            hashMapOf(
+                "id" to "cat_astronomy",
+                "name" to "Thiên Văn Học",
+                "slug" to "astronomy",
+                "type" to "astronomy",
+                "description" to "Khám phá vũ trụ kỳ bí",
+                "imageUrl" to "https://dtv-ebook.com.vn/images/files_2/2022/012022/vu-tru-carl-sagan.jpg",
+                "color" to "#283593",
+                "order" to 9,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
             )

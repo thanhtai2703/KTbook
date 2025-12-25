@@ -69,6 +69,7 @@ import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.ui.theme.Yellow
 import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.viewmodel.LibraryViewModel
+import com.kienvo.rosach.viewmodel.PlayerViewModel
 import com.kienvo.rosach.widgets.ActionCircleButton
 import com.kienvo.rosach.widgets.AmbienceBottomSheet
 import com.kienvo.rosach.widgets.BookStatItem
@@ -94,7 +95,8 @@ fun BookDetailScreen(
     initialCoverUrl: String? = null,
     sourceKey: String? = null,
     bookViewModel: BookViewModel = viewModel(),
-    libraryViewModel: LibraryViewModel = viewModel()
+    libraryViewModel: LibraryViewModel = viewModel(),
+    playerViewModel: PlayerViewModel = viewModel()
 ) {
     // Decode URL-encoded parameters
     val decodedTitle = initialTitle?.let {
@@ -137,17 +139,18 @@ fun BookDetailScreen(
 
     // Check if book is in favorites
     val isFavorite by libraryViewModel.favorites.collectAsState()
-    val isBookFavorite = isFavorite.any { it.id == bookId }
+    val isBookFavorite = isFavorite.any { item -> item.id == bookId }
 
     val bookTitle = if (immediateTitle.isNotEmpty()) immediateTitle else (book?.title ?: "Đang tải...")
     val bookAuthor = if (immediateAuthor.isNotEmpty()) immediateAuthor else (book?.author ?: "")
     val bookCover = if (immediateCover.isNotEmpty()) immediateCover else (book?.coverUrl?.toString() ?: "")
 
     // Sử dụng dữ liệu thực từ book, fallback sang placeholder nếu chưa có
-    val bookDesc = book?.let {
-        // Nếu database có trường description, dùng nó. Nếu không, dùng placeholder
+    val bookDesc = if (book?.description?.isNotEmpty() == true) {
+        book?.description!!
+    } else {
         "Một cuốn sách hay đang chờ bạn khám phá. Thông tin chi tiết đang được cập nhật..."
-    } ?: "Đang tải thông tin..."
+    }
 
     val bookType = book?.type ?: "audiobook"
     val bookRating = book?.rating ?: 0.0
@@ -364,8 +367,6 @@ fun BookDetailScreen(
                         InfoRow(label = "Giọng đọc", value = "Đang cập nhật")
                         Spacer(modifier = Modifier.height(12.dp))
                         InfoRow(label = "Nhà xuất bản", value = "Đang cập nhật")
-                        Spacer(modifier = Modifier.height(12.dp))
-                        InfoRow(label = "Đánh giá", value = "${book?.rating ?: 0.0} ⭐")
 
                         Spacer(modifier = Modifier.height(24.dp))
                         MyDivider()
@@ -381,16 +382,6 @@ fun BookDetailScreen(
                             textAlign = TextAlign.Justify
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
-                        MyDivider()
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Chapters
-                        SectionTitle(title = "Danh sách chương")
-                        chapters.forEachIndexed { index, chapterName ->
-                            ChapterItem(index = index + 1, name = chapterName)
-                        }
-
                         Spacer(modifier = Modifier.height(100.dp))
                     }
                 }
@@ -402,10 +393,8 @@ fun BookDetailScreen(
             AmbienceBottomSheet(
                 sheetState = sheetState,
                 onDismiss = { showBottomSheet = false },
-                onAiClick = { scope.launch { rainVolume = 0.6f; fireVolume = 0.2f } },
-                rainVol = rainVolume, onRainChange = { rainVolume = it },
-                fireVol = fireVolume, onFireChange = { fireVolume = it },
-                cafeVol = cafeVolume, onCafeChange = { cafeVolume = it }
+                playerViewModel = playerViewModel,
+                bookDescription = book?.description ?: ""
             )
         }
     }

@@ -27,7 +27,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
-import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
+import com.kienvo.rosach.screens.ChatRecommendScreen
+//import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
 import com.kienvo.rosach.screens.AstronomyDetailScreen
 import com.kienvo.rosach.screens.AstronomyScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
@@ -42,7 +43,7 @@ import com.kienvo.rosach.widgets.BottomBar
 import com.kienvo.rosach.widgets.MiniPlayer
 import com.kienvo.rosach.screens.EbookScreen
 import com.kienvo.rosach.screens.HomeScreen
-import com.kienvo.rosach.screens.KidAudioPlayerScreen
+//import com.kienvo.rosach.screens.KidAudioPlayerScreen
 import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
 import com.kienvo.rosach.screens.LibraryScreen
@@ -91,12 +92,13 @@ fun AppNavigation(
     val currentBook by playerViewModel.currentBook.collectAsState()
     val isPlaying by playerViewModel.isPlaying.collectAsState()
     val currentPosition by playerViewModel.currentPosition.collectAsState()
+    val duration by playerViewModel.duration.collectAsState()
     val showMiniPlayer by playerViewModel.showMiniPlayer.collectAsState()
 
+    val progress = if (duration > 0) currentPosition.toFloat() / duration.toFloat() else 0f
+
     // Ẩn MiniPlayer khi đang ở màn hình player full screen
-    val isInFullPlayer = currentRoute?.startsWith("audio_player") == true ||
-                         currentRoute?.startsWith("kid_audio_player") == true ||
-                         currentRoute?.startsWith("astronomy_audio_player") == true
+    val isInFullPlayer = currentRoute?.startsWith("audio_player") == true
 
     SharedTransitionLayout {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -111,18 +113,13 @@ fun AppNavigation(
                             MiniPlayer(
                                 book = currentBook,
                                 isPlaying = isPlaying,
-                                currentPosition = currentPosition,
+                                currentPosition = progress,
                                 onPlayPauseClick = { playerViewModel.togglePlayPause() },
                                 onCloseClick = { playerViewModel.closePlayer() },
                                 onMiniPlayerClick = {
-                                    // Mở lại màn hình player full screen
+                                    // Mở lại màn hình player full screen (Unified)
                                     currentBook?.let { book ->
-                                        val route = when (book.type) {
-                                            "kid" -> "kid_audio_player/${book.id}"
-                                            "astronomy" -> "astronomy_audio_player/${book.id}"
-                                            else -> "audio_player/${book.id}"
-                                        }
-                                        navController.navigate(route)
+                                        navController.navigate("audio_player/${book.id}")
                                     }
                                 }
                             )
@@ -252,7 +249,8 @@ fun AppNavigation(
                         HomeScreen(
                             navController = navController,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = this
+                            animatedVisibilityScope = this,
+                            playerViewModel = playerViewModel
                         )
                     }
 
@@ -265,6 +263,7 @@ fun AppNavigation(
 
                     composable("search") { SearchScreen(navController) }
                     composable("active_search") { ActiveSearchScreen(navController) }
+                    composable("ai_chat") { ChatRecommendScreen(navController) }
                     composable("big_banner_detail") {
                         BigBannerDetailScreen(navController = navController)
                     }
@@ -279,6 +278,7 @@ fun AppNavigation(
                             navController = navController,
                             bookId = bookId,
                             libraryViewModel = libraryViewModel,
+                            playerViewModel = playerViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this
                         )
@@ -306,6 +306,7 @@ fun AppNavigation(
                             navController = navController,
                             bookId = id,
                             libraryViewModel = libraryViewModel,
+                            playerViewModel = playerViewModel,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this,
                             initialTitle = title,
@@ -327,11 +328,11 @@ fun AppNavigation(
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
                     composable(Screen.Detective.route) { DetectiveScreen(navController) }
                     composable(Screen.Astronomy.route) { AstronomyScreen(navController) }
-                    composable("personal") { PersonalScreen(navController) }
                     composable("personal") {
                         PersonalScreen(
                             navController = navController,
-                            userViewModel = userViewModel
+                            userViewModel = userViewModel,
+                            authViewModel = authViewModel
                         )
                     }
 
@@ -339,7 +340,8 @@ fun AppNavigation(
                     composable("profile") {
                         PersonalScreen(
                             navController = navController,
-                            userViewModel = userViewModel
+                            userViewModel = userViewModel,
+                            authViewModel = authViewModel
                         )
                     }
 
@@ -370,28 +372,11 @@ fun AppNavigation(
                         )
                     }
 
-                    composable(
-                        route = "kid_audio_player/{bookId}",
-                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val bookId = backStackEntry.arguments?.getString("bookId")
-                        KidAudioPlayerScreen(
-                            navController = navController,
-                            bookId = bookId,
-                            playerViewModel = playerViewModel // Truyền PlayerViewModel vào
-                        )
-                    }
-
                     // --- MÀN HÌNH ADMIN MIGRATION ---
                     composable(Screen.DataMigration.route) {
                         DataMigrationScreen(
                             onNavigateBack = { navController.popBackStack() }
                         )
-                    }
-
-                    // --- MÀN HÌNH ASTRONOMY ---
-                    composable("astronomy") {
-                        AstronomyScreen(navController)
                     }
 
                     // Chi tiết sách thiên văn
@@ -407,19 +392,6 @@ fun AppNavigation(
                             animatedVisibilityScope = this,
                             playerViewModel = playerViewModel,
                             libraryViewModel = libraryViewModel
-                        )
-                    }
-
-                    // Player cho sách thiên văn
-                    composable(
-                        route = "astronomy_audio_player/{bookId}",
-                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val bookId = backStackEntry.arguments?.getString("bookId")
-                        AstronomyAudioPlayerScreen(
-                            navController = navController,
-                            bookId = bookId,
-                            playerViewModel = playerViewModel
                         )
                     }
 

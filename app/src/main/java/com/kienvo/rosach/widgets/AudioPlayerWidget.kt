@@ -38,7 +38,7 @@ fun AudioPlayerWidget(
 
     // Load audio when composable is first created
     LaunchedEffect(Unit) {
-        audioService.loadDacNhanTamAudio()
+        audioService.loadAudioFromUrl("https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd")
     }
 
     // Update slider position

@@ -12,12 +12,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,10 +36,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kienvo.rosach.model.Book
-import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.viewmodel.PlayerViewModel
 import com.kienvo.rosach.viewmodel.LibraryViewModel
+import com.kienvo.rosach.viewmodel.BookViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -47,24 +49,27 @@ fun AstronomyDetailScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     playerViewModel: PlayerViewModel = viewModel(),
-    libraryViewModel: LibraryViewModel = viewModel()
+    libraryViewModel: LibraryViewModel = viewModel(),
+    bookViewModel: BookViewModel = viewModel()
 ) {
-    // 1. Tìm sách trong SampleData
+    // 1. Lấy dữ liệu từ Firestore
     var book by remember { mutableStateOf<Book?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            // Tìm trong allBooks
-            book = SampleData.allBooks.find { it.id == bookId }
+            isLoading = true
+            book = bookViewModel.getBookById(bookId)
+            isLoading = false
         }
     }
 
     // Fallback nếu không tìm thấy
-    val displayBook = book ?: Book("id", "Đang tải...", "...", "", "astronomy", 0.0)
+    val displayBook = book ?: Book(bookId ?: "id", "Đang tải...", "...", "", "astronomy", 0.0)
 
     // Lấy trạng thái yêu thích từ LibraryViewModel
     val favorites by libraryViewModel.favorites.collectAsState()
-    val isFavorite = favorites.any { it.id == displayBook.id }
+    val isFavorite = favorites.any { item -> item.id == displayBook.id }
 
     // Colors - Màu xanh tím không gian cho sách thiên văn
     val AstronomyPurple = Color(0xFF7E57C2)
@@ -150,28 +155,9 @@ fun AstronomyDetailScreen(
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Rating
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "⭐ ${displayBook.rating}",
-                    color = Color(0xFFFFD700),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "(${(100..500).random()} đánh giá)",
-                    color = Color.Gray,
-                    fontSize = 13.sp
-                )
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            AstronomyActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Nút Yêu thích với logic toggle
             AstronomyFavoriteActionRow(
@@ -184,17 +170,15 @@ fun AstronomyDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Mô tả
-            Text(
-                text = "Giới thiệu",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "${displayBook.title} của tác giả ${displayBook.author} là một hành trình khám phá vũ trụ đầy mê hoặc. " +
+            val bookDesc = if (displayBook.description.isNotEmpty()) {
+                displayBook.description
+            } else {
+                "${displayBook.title} của tác giả ${displayBook.author} là một hành trình khám phá vũ trụ đầy mê hoặc. " +
                         "Cuốn sách đưa bạn đi từ những hiện tượng thiên văn cơ bản đến những bí ẩn sâu thẳm của không gian. " +
-                        "Với giọng kể sinh động, đây là tác phẩm không thể bỏ qua cho những ai đam mê khoa học vũ trụ.",
+                        "Với giọng kể sinh động, đây là tác phẩm không thể bỏ qua cho những ai đam mê khoa học vũ trụ."
+            }
+            Text(
+                text = bookDesc,
                 color = Color.Gray,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -208,7 +192,7 @@ fun AstronomyDetailScreen(
                 onClick = {
                     // Khởi tạo player và chuyển sang màn hình player full
                     playerViewModel.playBook(displayBook)
-                    navController.navigate("astronomy_audio_player/${displayBook.id}")
+                    navController.navigate("audio_player/${displayBook.id}")
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),

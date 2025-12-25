@@ -12,12 +12,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +36,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kienvo.rosach.model.Book
-import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.viewmodel.BookViewModel
 import com.kienvo.rosach.viewmodel.LibraryViewModel
@@ -49,22 +50,24 @@ fun KidBookDetailScreen(
     bookViewModel: BookViewModel = viewModel(),
     libraryViewModel: LibraryViewModel = viewModel()
 ) {
-    // 1. Tìm sách trong SampleData
+    // 1. Lấy dữ liệu từ Firestore
     var book by remember { mutableStateOf<Book?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            // Tìm trong allBooks (vì allBooks đã chứa cả kidsStories)
-            book = SampleData.allBooks.find { it.id == bookId }
+            isLoading = true
+            book = bookViewModel.getBookById(bookId)
+            isLoading = false
         }
     }
 
     // Fallback nếu không tìm thấy (tránh crash)
-    val displayBook = book ?: Book("id", "Đang tải...", "...", "", "kid", 0.0)
+    val displayBook = book ?: Book(bookId ?: "id", "Đang tải...", "...", "", "kid", 0.0)
 
     // Lấy trạng thái yêu thích từ LibraryViewModel
     val favorites by libraryViewModel.favorites.collectAsState()
-    val isFavorite = favorites.any { it.id == displayBook.id }
+    val isFavorite = favorites.any { item -> item.id == displayBook.id }
 
     // Colors
     val KidOrange = Color(0xFFFF7043)
@@ -142,7 +145,7 @@ fun KidBookDetailScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Metadata (Giả lập thời lượng vì model Book không có)
-            val fakeDuration = (10..30).random() // Random phút cho sinh động
+            val fakeDuration = (10..30).random() 
             Text(
                 text = "Truyện thiếu nhi • $fakeDuration phút",
                 color = KidOrange,
@@ -152,8 +155,6 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ActionRowItem(icon = Icons.Default.Download, text = "Tải xuống")
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Nút Yêu thích với logic toggle
             KidFavoriteActionRow(
@@ -165,9 +166,14 @@ fun KidBookDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Mô tả (Giả lập)
+            // Mô tả
+            val bookDesc = if (displayBook.description.isNotEmpty()) {
+                displayBook.description
+            } else {
+                "${displayBook.title} là một câu chuyện tuyệt vời của tác giả ${displayBook.author}. Câu chuyện mang đến những bài học ý nghĩa về cuộc sống, tình bạn và lòng dũng cảm, được kể lại qua giọng đọc truyền cảm dành riêng cho các bé."
+            }
             Text(
-                text = "${displayBook.title} là một câu chuyện tuyệt vời của tác giả ${displayBook.author}. Câu chuyện mang đến những bài học ý nghĩa về cuộc sống, tình bạn và lòng dũng cảm, được kể lại qua giọng đọc truyền cảm dành riêng cho các bé.",
+                text = bookDesc,
                 color = Color.Gray,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -179,9 +185,9 @@ fun KidBookDetailScreen(
             // Nút Nghe Ngay
             Button(
                 onClick = {
-                    // Chuyển sang màn hình Player
-                    navController.navigate("kid_audio_player/${displayBook.id}")
+                    navController.navigate("audio_player/${displayBook.id}")
                 },
+
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 contentPadding = PaddingValues(),
@@ -203,7 +209,6 @@ fun KidBookDetailScreen(
     }
 }
 
-// Giữ nguyên ActionRowItem
 @Composable
 fun ActionRowItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
     Row(
@@ -221,7 +226,6 @@ fun ActionRowItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: S
     }
 }
 
-// KidFavoriteActionRow composable
 @Composable
 fun KidFavoriteActionRow(
     isFavorite: Boolean,
