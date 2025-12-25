@@ -18,6 +18,9 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,10 +37,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kienvo.rosach.model.Book
-import com.kienvo.rosach.data.SampleData
 import com.kienvo.rosach.ui.theme.DarkBg
 import com.kienvo.rosach.viewmodel.PlayerViewModel
 import com.kienvo.rosach.viewmodel.LibraryViewModel
+import com.kienvo.rosach.viewmodel.BookViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -47,24 +50,27 @@ fun AstronomyDetailScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     playerViewModel: PlayerViewModel = viewModel(),
-    libraryViewModel: LibraryViewModel = viewModel()
+    libraryViewModel: LibraryViewModel = viewModel(),
+    bookViewModel: BookViewModel = viewModel()
 ) {
-    // 1. Tìm sách trong SampleData
+    // 1. Lấy dữ liệu từ Firestore
     var book by remember { mutableStateOf<Book?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(bookId) {
         if (bookId != null) {
-            // Tìm trong allBooks
-            book = SampleData.allBooks.find { it.id == bookId }
+            isLoading = true
+            book = bookViewModel.getBookById(bookId)
+            isLoading = false
         }
     }
 
     // Fallback nếu không tìm thấy
-    val displayBook = book ?: Book("id", "Đang tải...", "...", "", "astronomy", 0.0)
+    val displayBook = book ?: Book(bookId ?: "id", "Đang tải...", "...", "", "astronomy", 0.0)
 
     // Lấy trạng thái yêu thích từ LibraryViewModel
     val favorites by libraryViewModel.favorites.collectAsState()
-    val isFavorite = favorites.any { it.id == displayBook.id }
+    val isFavorite = favorites.any { item -> item.id == displayBook.id }
 
     // Colors - Màu xanh tím không gian cho sách thiên văn
     val AstronomyPurple = Color(0xFF7E57C2)

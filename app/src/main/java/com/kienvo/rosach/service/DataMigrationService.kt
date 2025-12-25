@@ -47,17 +47,19 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
         categories.add(book.type) // "audiobook" hoặc "ebook"
 
         when {
-            book.id.toIntOrNull() in 9..16 -> categories.add("popular")
-            book.id.toIntOrNull() in 17..24 -> categories.add("healing")
-            book.id.toIntOrNull() in 25..32 -> categories.add("detective")
-            book.id == "33" || book.id == "34" || book.id == "35" || book.id == "36" -> categories.add("top")
-            book.id.toIntOrNull() in 37..39 -> categories.add("free")
-            book.id.toIntOrNull() in 40..42 -> categories.add("literature")
-            book.id.toIntOrNull() in 43..44 -> categories.add("health")
-            book.id.toIntOrNull() in 45..46 -> categories.add("psychology")
-            book.id.toIntOrNull() in 47..48 -> categories.add("lifestyle")
-            book.id.toIntOrNull() in 49..50 -> categories.add("philosophy")
-            book.id.toIntOrNull() in 51..52 -> categories.add("business")
+            book.id.startsWith("popular_") -> categories.add("popular")
+            book.id.startsWith("healing_") -> categories.add("healing")
+            book.id.startsWith("detective_") -> categories.add("detective")
+            book.id.startsWith("top_ebook_") -> categories.add("top")
+            book.id.startsWith("free_ebook_") -> categories.add("free")
+            book.id.startsWith("literature_") -> categories.add("literature")
+            book.id.startsWith("health_") -> categories.add("health")
+            book.id.startsWith("psychology_") -> categories.add("psychology")
+            book.id.startsWith("lifestyle_") -> categories.add("lifestyle")
+            book.id.startsWith("philosophy_") -> categories.add("philosophy")
+            book.id.startsWith("business_") -> categories.add("business")
+            book.type == "kid" -> categories.add("kids")
+            book.type == "astronomy" -> categories.add("astronomy")
         }
 
         val bookData = hashMapOf(
@@ -126,7 +128,7 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
     private fun getAudioUrlForBook(bookId: String, partNumber: Int): String {
         // Ví dụ URL của Đắc Nhân Tâm
         return when (bookId) {
-            "2" -> "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
+            "audio_2" -> "https://firebasestorage.googleapis.com/v0/b/rosach-5d3e8.firebasestorage.app/o/DacNhanTam%2Fdac-nhan.mp3?alt=media&token=7673b069-8efe-4b4d-a9de-35ae516e47fd"
             // Thêm các sách khác ở đây
             else -> "https://example.com/audio/${bookId}_part_$partNumber.mp3"
         }
@@ -201,6 +203,26 @@ class DataMigrationService(private val db: FirebaseFirestore = FirebaseFirestore
                 "type" to "ebook",
                 "description" to "Sách về kinh doanh và đầu tư",
                 "order" to 7,
+                "isActive" to true,
+                "createdAt" to com.google.firebase.Timestamp.now()
+            ),
+            hashMapOf(
+                "id" to "cat_kids",
+                "name" to "Truyện Thiếu Nhi",
+                "slug" to "kids",
+                "type" to "kid",
+                "description" to "Truyện kể bé nghe",
+                "order" to 8,
+                "isActive" to true,
+                "createdAt" to com.google.firebase.Timestamp.now()
+            ),
+            hashMapOf(
+                "id" to "cat_astronomy",
+                "name" to "Thiên Văn Học",
+                "slug" to "astronomy",
+                "type" to "astronomy",
+                "description" to "Khám phá vũ trụ kỳ bí",
+                "order" to 9,
                 "isActive" to true,
                 "createdAt" to com.google.firebase.Timestamp.now()
             )

@@ -15,11 +15,11 @@ data class Book(
 // Các hàm này giờ chỉ gọi từ SampleData
 fun getBooks(): List<Book> = SampleData.allBooks
 
-fun getPopularBooks(): List<Book> = SampleData.allBooks.filter { "popular" in it.id || it.id.toIntOrNull() in 9..16 }
+fun getPopularBooks(): List<Book> = SampleData.allBooks.filter { it.id.startsWith("popular_") }
 
-fun getHealingBooks(): List<Book> = SampleData.allBooks.filter { "healing" in it.id || it.id.toIntOrNull() in 17..24 }
+fun getHealingBooks(): List<Book> = SampleData.allBooks.filter { it.id.startsWith("healing_") }
 
-fun getDetectiveBooks(): List<Book> = SampleData.allBooks.filter { "detective" in it.id || it.id.toIntOrNull() in 25..32 }
+fun getDetectiveBooks(): List<Book> = SampleData.allBooks.filter { it.id.startsWith("detective_") }
 
 fun getEbooks(): List<Book> = SampleData.allBooks.filter { it.type == "ebook" }
 

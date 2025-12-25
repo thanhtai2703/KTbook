@@ -120,6 +120,25 @@ class BookRepository(
     }
 
     /**
+     * Lấy danh sách sách theo một mảng các IDs
+     */
+    suspend fun getBooksByIds(bookIds: List<String>): List<Book> {
+        if (bookIds.isEmpty()) return emptyList()
+        
+        return try {
+            // Firestore whereIn có giới hạn 30 item mỗi lần query.
+            // Để đơn giản và an toàn, chúng ta fetch từng book (có thể tối ưu sau bằng batch/chunk)
+            val books = mutableListOf<Book>()
+            for (id in bookIds) {
+                getBookById(id)?.let { books.add(it) }
+            }
+            books
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
      * Lấy sách featured (isFeatured = true)
      */
     suspend fun getFeaturedBooks(): List<Book> {

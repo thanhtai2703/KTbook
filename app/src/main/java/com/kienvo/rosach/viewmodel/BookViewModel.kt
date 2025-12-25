@@ -92,11 +92,7 @@ class BookViewModel : ViewModel() {
                 }
 
                 if (_kidsBooks.value.isEmpty()) {
-                    _kidsBooks.value = books.filter {
-                        it.title.contains("thiếu nhi", ignoreCase = true) ||
-                        it.author.contains("thiếu nhi", ignoreCase = true) ||
-                        it.title.contains("trẻ em", ignoreCase = true)
-                    }.take(10)
+                    _kidsBooks.value = books.filter { it.id.startsWith("kid_") }
                 }
 
                 if (_trendingBooks.value.isEmpty()) {

@@ -27,7 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.kienvo.rosach.screens.ActiveSearchScreen
 import com.kienvo.rosach.screens.AudioPlayerScreen
-import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
+//import com.kienvo.rosach.screens.AstronomyAudioPlayerScreen
 import com.kienvo.rosach.screens.AstronomyDetailScreen
 import com.kienvo.rosach.screens.AstronomyScreen
 import com.kienvo.rosach.screens.BigBannerDetailScreen
@@ -42,7 +42,7 @@ import com.kienvo.rosach.widgets.BottomBar
 import com.kienvo.rosach.widgets.MiniPlayer
 import com.kienvo.rosach.screens.EbookScreen
 import com.kienvo.rosach.screens.HomeScreen
-import com.kienvo.rosach.screens.KidAudioPlayerScreen
+//import com.kienvo.rosach.screens.KidAudioPlayerScreen
 import com.kienvo.rosach.screens.KidBookDetailScreen
 import com.kienvo.rosach.screens.KidsScreen
 import com.kienvo.rosach.screens.LibraryScreen
@@ -327,7 +327,6 @@ fun AppNavigation(
                     composable(Screen.SelfHelp.route) { SelfHelpScreen(navController) }
                     composable(Screen.Detective.route) { DetectiveScreen(navController) }
                     composable(Screen.Astronomy.route) { AstronomyScreen(navController) }
-                    composable("personal") { PersonalScreen(navController) }
                     composable("personal") {
                         PersonalScreen(
                             navController = navController,
@@ -357,6 +356,18 @@ fun AppNavigation(
                     }
 
                     composable(
+                        route = "kid_audio_player/{bookId}",
+                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString("bookId")
+                        AudioPlayerScreen(
+                            navController = navController,
+                            bookId = bookId,
+                            playerViewModel = playerViewModel
+                        )
+                    }
+
+                    composable(
                         route = "kid_detail/{bookId}",
                         arguments = listOf(navArgument("bookId") { type = NavType.StringType })
                     ) { backStackEntry ->
@@ -370,28 +381,11 @@ fun AppNavigation(
                         )
                     }
 
-                    composable(
-                        route = "kid_audio_player/{bookId}",
-                        arguments = listOf(navArgument("bookId") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val bookId = backStackEntry.arguments?.getString("bookId")
-                        KidAudioPlayerScreen(
-                            navController = navController,
-                            bookId = bookId,
-                            playerViewModel = playerViewModel // Truyền PlayerViewModel vào
-                        )
-                    }
-
                     // --- MÀN HÌNH ADMIN MIGRATION ---
                     composable(Screen.DataMigration.route) {
                         DataMigrationScreen(
                             onNavigateBack = { navController.popBackStack() }
                         )
-                    }
-
-                    // --- MÀN HÌNH ASTRONOMY ---
-                    composable("astronomy") {
-                        AstronomyScreen(navController)
                     }
 
                     // Chi tiết sách thiên văn
@@ -416,7 +410,7 @@ fun AppNavigation(
                         arguments = listOf(navArgument("bookId") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val bookId = backStackEntry.arguments?.getString("bookId")
-                        AstronomyAudioPlayerScreen(
+                        AudioPlayerScreen(
                             navController = navController,
                             bookId = bookId,
                             playerViewModel = playerViewModel
